@@ -1,24 +1,29 @@
-﻿// bullet.cpp
-#include "bullet.h"
+﻿#include "bullet.h"
 
-Bullet::Bullet(Vector2 pos) {
+Bullet::Bullet(Vector2 pos, Texture2D* tex) {
     position = pos;
-    speed = 500.0f; // pixels per second
+    speed = 500.0f;
     active = true;
+    texture = tex;
 }
 
 void Bullet::Update() {
     if (active) {
         position.y -= speed * GetFrameTime();
-        // Nếu viên đạn ra khỏi màn hình, đặt active = false
-        if (position.y < 0) {
+        float scale = 0.1f; // Giảm scale xuống nhỏ hơn nữa
+        if (position.y + (texture ? texture->height * scale : 0) < 0) {
             active = false;
         }
     }
 }
 
 void Bullet::Draw() {
-    if (active) {
-        DrawCircleV(position, 5, YELLOW); // Vẽ viên đạn là hình tròn nhỏ màu vàng
+    if (active && texture) {
+        float scale = 0.1f; // Giảm scale xuống nhỏ hơn nữa
+        Vector2 drawPos = {
+            position.x - (texture->width * scale) / 2,
+            position.y - (texture->height * scale) / 2
+        };
+        DrawTextureEx(*texture, drawPos, 0.0f, scale, WHITE);
     }
 }
