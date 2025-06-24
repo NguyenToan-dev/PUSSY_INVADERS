@@ -123,11 +123,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="bullet.cpp" />
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="src\Brightness.cpp" />
+    <ClCompile Include="src\bullet.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\SpaceShip.cpp" />
+    <ClCompile Include="src\SpaceShipTexture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="bullet.h" />
+    <ClInclude Include="src\Brightness.h" />
+    <ClInclude Include="src\bullet.h" />
+    <ClInclude Include="src\SpaceShip.h" />
+    <ClInclude Include="src\SpaceShipTexture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

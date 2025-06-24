@@ -10,7 +10,7 @@ Bullet::Bullet(Vector2 pos, Texture2D* tex) {
 void Bullet::Update() {
     if (active) {
         position.y -= speed * GetFrameTime();
-        float scale = 0.1f; // Giảm scale xuống nhỏ hơn nữa
+        float scale = 0.1f;
         if (position.y + (texture ? texture->height * scale : 0) < 0) {
             active = false;
         }
@@ -19,7 +19,7 @@ void Bullet::Update() {
 
 void Bullet::Draw() {
     if (active && texture) {
-        float scale = 0.1f; // Giảm scale xuống nhỏ hơn nữa
+        float scale = 0.1f;
         Vector2 drawPos = {
             position.x - (texture->width * scale) / 2,
             position.y - (texture->height * scale) / 2
