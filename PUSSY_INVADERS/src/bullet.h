@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "raylib.h"
 
 class Bullet {
@@ -11,4 +11,5 @@ public:
     Bullet(Vector2 pos, Texture2D* tex);
     void Update();
     void Draw();
+    Rectangle getRect() const;  // 👈 Thêm dòng này
 };
