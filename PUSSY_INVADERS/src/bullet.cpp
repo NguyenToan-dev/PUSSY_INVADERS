@@ -1,4 +1,4 @@
-﻿#include "bullet.h"
+#include "bullet.h"
 
 Bullet::Bullet(Vector2 pos, Texture2D* tex) {
     position = pos;
@@ -26,4 +26,14 @@ void Bullet::Draw() {
         };
         DrawTextureEx(*texture, drawPos, 0.0f, scale, WHITE);
     }
+}
+// them function nay 
+Rectangle Bullet::getRect() const {
+    float scale = 0.1f;
+    return {
+        position.x - (texture->width * scale) / 2,
+        position.y - (texture->height * scale) / 2,
+        texture->width * scale,
+        texture->height * scale
+    };
 }
