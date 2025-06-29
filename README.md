@@ -1,2 +1,0 @@
-# Background
-idk lol
