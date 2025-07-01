@@ -456,15 +456,17 @@ private:
         if (backgroundTexture.id == 0) return;
         float scaleX = (float)GetScreenWidth() / backgroundTexture.width;
         float scaleY = (float)GetScreenHeight() / backgroundTexture.height;
-        float baseScale = std::max(scaleX, scaleY);
+        //float baseScale = std::max(scaleX, scaleY);
         float diagonal = sqrtf(GetScreenWidth() * GetScreenWidth() + GetScreenHeight() * GetScreenHeight());
         float imageMinDim = std::min((float)backgroundTexture.width, (float)backgroundTexture.height);
         backgroundScale = diagonal / imageMinDim;
     }
 };
 
+/*
 int main() {
     Game game;
     game.Run();
     return 0;
 }
+*/
