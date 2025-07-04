@@ -17,10 +17,15 @@ private:
     float blurOpacity; 
     float countdownTimer;
 
+    // recently added
     SpaceShip ship;
+    Sound ship_shootsound;
+    Sound pussy_shootsound;
     std::vector<Bullet> bullets;
     Texture2D bullet_texture;
     std::vector<Pussy> pussies;
+    Texture pussy_shit_texture;
+    std::vector<Bullet> pussyBullets;
 
     void DrawPaused();
     void DrawUI();

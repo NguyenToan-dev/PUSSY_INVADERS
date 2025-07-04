@@ -11,11 +11,25 @@ GameController::GameController()
     blurOpacity = 0.0f; 
     countdownTimer = 0.0f;
 
+    // recently added
     ship.SetAttribute();
+    ship_shootsound = LoadSound("sound/lasergun.wav");
+    pussy_shootsound = LoadSound("sound/bom.mp3");
+    SetSoundVolume(ship_shootsound, 1.0f);
+    SetSoundVolume(pussy_shootsound, .5f);
     bullets.reserve(20);
     bullet_texture = LoadTexture("image/bullet.png");
     Pussy::LoadImage();
-    pussies.reserve(30);
+    pussies.reserve(18);
+    pussy_shit_texture = LoadTexture("image/shit.png");
+    for (int row = 0; row < 3; row++) 
+    {
+        for (int i = 0; i < 6; i++) 
+        {
+            Vector2 pos = { 150.0f + i * 200, 100.0f + row * 100 };
+            pussies.emplace_back(1, pos);
+        }
+    }
 }
 
 GameController::~GameController()
@@ -23,7 +37,10 @@ GameController::~GameController()
     UnloadTexture(background.GetTexture());
     UnloadMusicStream(music.GetMusic());
     
+    // recently added
     UnloadTexture(bullet_texture);
+    UnloadSound(ship_shootsound);
+    UnloadSound(pussy_shootsound);
     Pussy::UnloadImage();
 }
 
@@ -191,8 +208,10 @@ void GameController::Draw()
 {
     background.DrawRotatingBackground();
     
+    // recently added
     if(IsKeyPressed(KEY_SPACE))
-        ship.Shooting(bullets, &bullet_texture);
+        ship.Shooting(bullets, &bullet_texture), PlaySound(ship_shootsound);
+
     for(int i=0; i<(int)bullets.size(); i++)
     {
         if(bullets[i].active == false)
@@ -204,6 +223,77 @@ void GameController::Draw()
         bullets[i].Update();
         bullets[i].Draw();
     }
+
+    for(auto pussy : pussies)
+        pussy.Draw();
+
+    for (auto& bullet : bullets) 
+    {
+        if (!bullet.active) 
+            continue;
+        for (auto& pussy : pussies) 
+        {
+            if (CheckCollisionRecs(bullet.getRect(), pussy.getRect())) 
+            {
+                bullet.active = false;
+                pussy.position.x = -9999;
+                break;
+            }
+        }
+    }
+
+    for(int i=0; i<(int)pussies.size(); i++)
+    {
+        if(pussies[i].position.x < 0)
+        {
+            pussies.erase(pussies.begin() + i);
+            i--;
+        }
+    }
+
+    bool reachEdge = false;
+    for (auto& pussy : pussies) 
+    {
+        pussy.Update(Pussy::pussyDirection);
+        Rectangle r = pussy.getRect();
+        if (r.x < 0 || r.x + r.width > GetScreenWidth()) 
+            reachEdge = true;
+    }
+    if (reachEdge) 
+    {
+        Pussy::pussyDirection = -(Pussy::pussyDirection);
+        for (auto& pussy : pussies) 
+            pussy.position.y += 20;
+    }
+
+    Pussy::pussyShootTimer += GetFrameTime();
+    if (Pussy::pussyShootTimer >= Pussy::pussyShootInterval && !pussies.empty()) 
+    {
+        Pussy::pussyShootTimer = 0.0f;
+        int idx = GetRandomValue(0, pussies.size() - 1);
+        Pussy& shooter = pussies[idx];
+        Vector2 pos = {
+            shooter.getRect().x + shooter.getRect().width / 2,
+            shooter.getRect().y + shooter.getRect().height
+        };
+        Bullet pussyBullet(pos, &pussy_shit_texture);
+        pussyBullet.speed = -pussyBullet.speed;
+        pussyBullets.push_back(pussyBullet);
+        PlaySound(pussy_shootsound);
+    }
+
+    for(int i=0; i<(int)pussyBullets.size(); i++)
+    {
+        if(pussyBullets[i].active == false)
+        {
+            pussyBullets.erase(pussyBullets.begin() + i);
+            i--;
+            continue;
+        }
+        pussyBullets[i].Update();
+        pussyBullets[i].Draw();
+    }
+
     ship.Moving();
     //ship.StatusBar();
     
