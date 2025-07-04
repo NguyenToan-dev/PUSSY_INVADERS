@@ -1,7 +1,10 @@
-
-#include "pussy.h"
+#include "Pussy.h"
 
 Texture2D Pussy::image = { 0 };
+
+int Pussy::pussyDirection = 2;
+float Pussy::pussyShootTimer = 0.0f;
+float Pussy::pussyShootInterval = 1.5f;
 
 Pussy::Pussy(int type, Vector2 position) {
     this->type = type;

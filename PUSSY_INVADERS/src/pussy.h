@@ -1,4 +1,3 @@
-
 #pragma once
 #include <raylib.h>
 
@@ -8,6 +7,11 @@ public:
     void Update(int direction);
     void Draw();
     int GetType();
+
+    static int pussyDirection;
+    static float pussyShootTimer;
+    static float pussyShootInterval;
+
     Rectangle getRect();
 
     static void LoadImage();     // Gọi sau InitWindow

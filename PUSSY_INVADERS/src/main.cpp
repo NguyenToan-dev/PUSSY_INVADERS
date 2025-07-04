@@ -1,59 +1,29 @@
-﻿#include <raylib.h>
-#include <vector>
-#include "SpaceShip.h"
-#include "bullet.h"
+#include<raylib.h>
+#include "GameController.h"
 
 int main()
 {
-    const int width = 1800;
-    const int height = 900;
+    const int width = 1920;
+    const int height = 1080;
 
-    InitWindow(width, height, "Space Ship");
-    InitAudioDevice(); // <-- Add this line
+    InitWindow(width, height, "PUSSY INVADERs");
     SetTargetFPS(30);
-    SpaceShip obj;
+    InitAudioDevice();
 
-    // Declare bullets as a vector to store Bullet objects
-    std::vector<Bullet> bullets;
+    GameController controller;
 
-    // Load the bullet texture
-    Texture2D bulletTexture = LoadTexture("image/bullet.png");
-
-    // Load the shooting sound
-    Sound shootSound = LoadSound("sound/lasergun.wav");
-    SetSoundVolume(shootSound, 1.0f);
-
-    while (!WindowShouldClose())
+    while(!WindowShouldClose())
     {
-        // Update bullets
-        for (auto& bullet : bullets) {
-            if (bullet.active) bullet.Update();
-        }
-
+        ClearBackground(BLACK);
         BeginDrawing();
-        ClearBackground(RAYWHITE);
-
-        // Draw bullets
-        for (auto& bullet : bullets) {
-            if (bullet.active) bullet.Draw();
-        }
-
-        obj.Moving();
-        obj.StatusBar();
-
+            controller.Update();
+            controller.Draw();
         EndDrawing();
 
-        if (IsKeyPressed(KEY_SPACE)) {
-            obj.Shooting(bullets, &bulletTexture);
-            PlaySound(shootSound);
-        }
     }
 
-    // Unload resources
-    UnloadTexture(bulletTexture);
-    UnloadSound(shootSound);
-
-    CloseAudioDevice(); // <-- Add this line
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }
+

@@ -1,7 +1,7 @@
 #pragma once
 #include<raylib.h>
 #include<vector>
-#include "bullet.h"
+#include "Bullet.h"
 #include "Brightness.h"
 #include "SpaceShipTexture.h"
 #define ull unsigned long long
@@ -28,6 +28,7 @@ public:
     SpaceShip();
     ~SpaceShip();
     void InsertSpaceShipTexture();
+    void SetAttribute();
     Texture2D GetShip() const;
     Texture2D GetFireball() const;
     void Moving();
