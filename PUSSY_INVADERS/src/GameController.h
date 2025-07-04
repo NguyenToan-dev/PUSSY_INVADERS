@@ -2,7 +2,10 @@
 #include "Background.h"
 #include "MusicController.h"
 #include "GameOver.h"
+#include "SpaceShip.h"
+#include "Pussy.h"
 #include<algorithm>
+#include<vector>
 
 class GameController
 {
@@ -13,6 +16,11 @@ private:
     GameState gameState;
     float blurOpacity; 
     float countdownTimer;
+
+    SpaceShip ship;
+    std::vector<Bullet> bullets;
+    Texture2D bullet_texture;
+    std::vector<Pussy> pussies;
 
     void DrawPaused();
     void DrawUI();

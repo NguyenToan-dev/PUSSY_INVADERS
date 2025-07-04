@@ -1,5 +1,4 @@
-
-#include "pussy.h"
+#include "Pussy.h"
 
 Texture2D Pussy::image = { 0 };
 

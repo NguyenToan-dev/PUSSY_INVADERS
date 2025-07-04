@@ -10,12 +10,21 @@ GameController::GameController()
     gameover = GameOver();   
     blurOpacity = 0.0f; 
     countdownTimer = 0.0f;
+
+    ship.SetAttribute();
+    bullets.reserve(20);
+    bullet_texture = LoadTexture("image/bullet.png");
+    Pussy::LoadImage();
+    pussies.reserve(30);
 }
 
 GameController::~GameController()
 {
     UnloadTexture(background.GetTexture());
     UnloadMusicStream(music.GetMusic());
+    
+    UnloadTexture(bullet_texture);
+    Pussy::UnloadImage();
 }
 
 void GameController::Update() 
@@ -181,6 +190,23 @@ void GameController::HandleInput()
 void GameController::Draw() 
 {
     background.DrawRotatingBackground();
+    
+    if(IsKeyPressed(KEY_SPACE))
+        ship.Shooting(bullets, &bullet_texture);
+    for(int i=0; i<(int)bullets.size(); i++)
+    {
+        if(bullets[i].active == false)
+        {
+            bullets.erase(bullets.begin() + i);
+            i--;
+            continue;
+        }
+        bullets[i].Update();
+        bullets[i].Draw();
+    }
+    ship.Moving();
+    //ship.StatusBar();
+    
     if (gameState == GAME_GAME_OVER) {
         DrawGameOver();    
     }
@@ -189,7 +215,7 @@ void GameController::Draw()
     else if (gameState == GAME_PAUSED)
         DrawPaused();   
     else 
-        DrawUI();  
+        DrawUI();
 }
 
 void GameController::DrawGameOver() 

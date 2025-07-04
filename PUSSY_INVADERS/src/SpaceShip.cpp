@@ -17,6 +17,20 @@ SpaceShip::SpaceShip()
     timer = 0.0f; // removable
 }
 
+void SpaceShip::SetAttribute()
+{
+    live_counter = 5;   // max health 10
+    missile_counter = 0;    // max missile 10
+    weapon_level = 0;   // max level 20
+    thigh_counter = 0;  // as many as possible
+    overheat = 0;   // heat limit is 2000
+    score = 0;  // can be any non-negative number
+    InsertSpaceShipTexture();
+    font = LoadFont("font/ChonkyBitsFontBold.otf");
+
+    timer = 0.0f; // removable
+}
+
 void SpaceShip::InsertSpaceShipTexture()
 {
     image.SetTexture();
