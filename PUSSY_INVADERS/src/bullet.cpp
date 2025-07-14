@@ -5,6 +5,7 @@ Bullet::Bullet(Vector2 pos, Texture2D* tex) {
     speed = 500.0f;
     active = true;
     texture = tex;
+    damage = 1;
 }
 
 void Bullet::Update() {
@@ -27,7 +28,7 @@ void Bullet::Draw() {
         DrawTextureEx(*texture, drawPos, 0.0f, scale, WHITE);
     }
 }
-// them function nay 
+
 Rectangle Bullet::getRect() const {
     float scale = 0.1f;
     return {

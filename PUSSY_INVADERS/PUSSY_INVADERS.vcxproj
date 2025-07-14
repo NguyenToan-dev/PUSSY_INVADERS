@@ -18,6 +18,34 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Addition.h" />
+    <ClInclude Include="src\Background.h" />
+    <ClInclude Include="src\Brightness.h" />
+    <ClInclude Include="src\bullet.h" />
+    <ClInclude Include="src\GameController.h" />
+    <ClInclude Include="src\GameOver.h" />
+    <ClInclude Include="src\MusicController.h" />
+    <ClInclude Include="src\Pickup.h" />
+    <ClInclude Include="src\pussy.h" />
+    <ClInclude Include="src\SpaceShip.h" />
+    <ClInclude Include="src\SpaceShipTexture.h" />
+    <ClInclude Include="src\ThunderBullet.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\Background.cpp" />
+    <ClCompile Include="src\Brightness.cpp" />
+    <ClCompile Include="src\bullet.cpp" />
+    <ClCompile Include="src\GameController.cpp" />
+    <ClCompile Include="src\GameOver.cpp" />
+    <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\MusicController.cpp" />
+    <ClCompile Include="src\Pickup.cpp" />
+    <ClCompile Include="src\pussy.cpp" />
+    <ClCompile Include="src\SpaceShip.cpp" />
+    <ClCompile Include="src\SpaceShipTexture.cpp" />
+    <ClCompile Include="src\ThunderBullet.cpp" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
@@ -122,19 +150,6 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="src\Brightness.cpp" />
-    <ClCompile Include="src\bullet.cpp" />
-    <ClCompile Include="src\main.cpp" />
-    <ClCompile Include="src\SpaceShip.cpp" />
-    <ClCompile Include="src\SpaceShipTexture.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Brightness.h" />
-    <ClInclude Include="src\bullet.h" />
-    <ClInclude Include="src\SpaceShip.h" />
-    <ClInclude Include="src\SpaceShipTexture.h" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

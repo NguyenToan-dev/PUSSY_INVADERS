@@ -14,21 +14,21 @@ SpaceShip::SpaceShip()
     InsertSpaceShipTexture();
     font = LoadFont("font/ChonkyBitsFontBold.otf");
 
-    timer = 0.0f; // removable
+    //timer = 0.0f; // removable
 }
 
 void SpaceShip::SetAttribute()
 {
-    live_counter = 5;   // max health 10
-    missile_counter = 0;    // max missile 10
-    weapon_level = 0;   // max level 20
-    thigh_counter = 0;  // as many as possible
-    overheat = 0;   // heat limit is 2000
-    score = 0;  // can be any non-negative number
+    live_counter = 5;   
+    missile_counter = 0;    
+    weapon_level = 0;   
+    thigh_counter = 0;  
+    overheat = 0;   
+    score = 0;  
     InsertSpaceShipTexture();
     font = LoadFont("font/ChonkyBitsFontBold.otf");
 
-    timer = 0.0f; // removable
+    //timer = 0.0f; // removable
 }
 
 void SpaceShip::InsertSpaceShipTexture()
@@ -49,7 +49,7 @@ Texture2D SpaceShip::GetFireball() const { return image.fireball.texture; }
 void SpaceShip::Moving()
 {
     Vector2 mouse = GetMousePosition();
-    Vector2 pos = HitBoxChecking(mouse);
+    Vector2 pos = BoundChecking(mouse);
     DrawTextureEx(image.ship.texture, pos, 0.0f, 0.2f, WHITE);
 
     Vector2 pos1 = RocketPosition(pos);
@@ -58,8 +58,20 @@ void SpaceShip::Moving()
     return;
 }
 
+void SpaceShip::MovingWhileBlinking(Color shiptint)
+{
+    Vector2 mouse = GetMousePosition();
+    Vector2 pos = BoundChecking(mouse);
+    DrawTextureEx(image.ship.texture, pos, 0.0f, 0.2f, shiptint);
+
+    Vector2 pos1 = RocketPosition(pos);
+    DrawTextureEx(image.fireball.texture, pos1, 0.0f, 0.2f, shiptint);
+    return;
+}
+
 void SpaceShip::StatusBar()
 {
+    UpdateStatus(HEAT_DECREASE);
     DrawTextEx(font, TextFormat("SCORE: %llu", score), { 0.0f, 0.0f }, 40.0f, 0.0f, GREEN);
     DrawTextEx(font, TextFormat("HEAT: %d/%d", overheat, heat_limit), { 0.0f, 40.0f }, 40.0f, 0.0f, GREEN);
     DrawTextureEx(image.bar.texture, image.bar.pos, 0.0f, 1.2f, WHITE);
@@ -84,36 +96,72 @@ void SpaceShip::StatusBar()
     pos.x = image.level.pos.x + static_cast<float>(image.level.texture.width) * 0.065f;
     pos.y = static_cast<float>(GetScreenHeight() - 50);
     DrawTextEx(font, TextFormat("\t%d\t", weapon_level), pos, 40.0f, 0.0f, GREEN);
+}
 
-    timer += GetFrameTime();
-    if (timer >= 0.2f)
+void SpaceShip::UpdateStatus(ShipStatus flag)
+{
+    if(flag == HEAT_DECREASE)
     {
-        timer = 0.0f;
-        UpdateStatus();
+        overheat -= 5;
+        if(overheat <= 0)
+        overheat = 0;   
     }
+    else if(flag == HEAT_INCREASE)
+    {
+        if(overheat >= heat_limit)
+        {
+            overheat = heat_limit;
+            return;
+        }
+        overheat += 40;
+    }  
+    else if(flag >= SCORE_GAIN_1 && flag <= SCORE_GAIN_3)   // gain score depends on the type of enemy.
+    {
+        if(flag == SCORE_GAIN_1)
+            score += 50;
+        else if(flag == SCORE_GAIN_2)
+            score += 100;
+        else if(flag == SCORE_GAIN_3)
+            score += 150;
+    }
+    else if(flag == LIVE_DECREASE)
+    {
+        live_counter--;
+        if(live_counter <= 0)
+            live_counter = 0;
+    }    
+    else if(flag == LEVEL_UP)
+    {
+        if(weapon_level >= 5)
+        {
+            weapon_level = 5;
+            return;
+        }
+        weapon_level++;
+    }  
+    else if(flag == MISSILE_ADD)
+    {
+        if(missile_counter >= 10)
+        {
+            missile_counter = 10;
+            return;
+        }
+        missile_counter++;
+    }
+    else if(flag == SUSHI_ADD)  {}  // collect a sushi roll -> increase thigh_counter
+    else if(flag == FISH_ADD)   {}  //  collect a full set of sushi -> increase thigh_counter
+    else if(flag == NEW_BULLET) {}  // Switch to new bullet's type, at the moment just one new type
     return;
 }
 
-void SpaceShip::UpdateStatus()
+void SpaceShip::AdjustStatus(ShipStatus flag)
 {
-    std::mt19937 engine(std::random_device{}());
-
-    std::uniform_int_distribution<int> live_dist(0, 10);
-    std::uniform_int_distribution<int> missile_dist(0, 10);
-    std::uniform_int_distribution<int> weapon_dist(0, 20);
-    std::uniform_int_distribution<int> thigh_dist(0, 100); // Example upper bound for "as many as possible"
-    std::uniform_int_distribution<int> overheat_dist(0, 2000);
-    std::uniform_int_distribution<int> score_dist(0, 100000); // Example upper bound for score
-
-    live_counter = live_dist(engine);
-    missile_counter = missile_dist(engine);
-    weapon_level = weapon_dist(engine);
-    thigh_counter = thigh_dist(engine);
-    overheat = overheat_dist(engine);
-    score = score_dist(engine);
+    if(flag <= 10 && flag >= 0)
+        UpdateStatus(flag);
+    return;
 }
 
-Vector2 SpaceShip::HitBoxChecking(Vector2 mouse)
+Vector2 SpaceShip::BoundChecking(Vector2 mouse)
 {
     float width = static_cast<float>(image.ship.texture.width) * 0.2f;
     float height = static_cast<float>(image.ship.texture.height) * 0.2f;
@@ -148,11 +196,40 @@ Vector2 SpaceShip::RocketPosition(Vector2 topleft)
 
 void SpaceShip::Shooting(std::vector<Bullet>& bullets, Texture2D* bulletTexture)
 {
+    UpdateStatus(HEAT_INCREASE);
     Vector2 mouse = GetMousePosition();
-    Vector2 pos = HitBoxChecking(mouse);
+    Vector2 pos = BoundChecking(mouse);
     float scale = 0.2f;
     Vector2 center;
     center.x = pos.x + static_cast<float>(image.ship.texture.width) * scale / 2.0f;
     center.y = pos.y + static_cast<float>(image.ship.texture.height) * scale / 2.0f;
     bullets.emplace_back(center, bulletTexture);
+}
+
+Rectangle SpaceShip::getRect()
+{
+    Vector2 mouse = GetMousePosition();
+    Rectangle ret;
+    ret.x = mouse.x - image.ship.texture.height * .2f /2.0;
+    ret.y = mouse.y - image.ship.texture.width * .2f /2.0;
+    ret.width = image.ship.texture.width * .2f;
+    ret.height  = image.ship.texture.height * .2f;
+    return ret;
+}
+
+int SpaceShip::HitBoxChecking(vector<Bullet*> &bullets)
+{
+    for(auto &bullet : bullets)
+    {
+        if(CheckCollisionRecs(bullet->getRect(), getRect()))
+        {
+            bullet->active = false;
+            bullet->position.x = -9999;
+            UpdateStatus(LIVE_DECREASE);
+            if(live_counter == 0)
+                return 2;
+            return 1;
+        }
+    }
+    return 0;
 }

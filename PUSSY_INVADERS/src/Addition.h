@@ -31,3 +31,14 @@ enum GameOverPhase
     RED_FLASH,
     TEXT_DISPLAY
 };
+
+enum ShipStatus
+{  
+    SCORE_GAIN_1, SCORE_GAIN_2, SCORE_GAIN_3,
+    HEAT_INCREASE, HEAT_DECREASE,
+    LIVE_DECREASE,
+    LEVEL_UP,
+    SUSHI_ADD, FISH_ADD,
+    MISSILE_ADD,
+    NEW_BULLET
+};

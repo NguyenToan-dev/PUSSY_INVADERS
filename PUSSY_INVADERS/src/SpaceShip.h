@@ -4,6 +4,7 @@
 #include "Bullet.h"
 #include "Brightness.h"
 #include "SpaceShipTexture.h"
+#include "Addition.h"
 #define ull unsigned long long
 using namespace std;
 
@@ -18,11 +19,11 @@ private:
     ull score;
     static int heat_limit;
 
-    float timer;    // removable
-
     Brightness fireball_brightness;
     SpaceShipTexture image;
     Font font;
+
+    void UpdateStatus(ShipStatus);
 
 public:
     SpaceShip();
@@ -32,9 +33,14 @@ public:
     Texture2D GetShip() const;
     Texture2D GetFireball() const;
     void Moving();
+    void MovingWhileBlinking(Color);
     void StatusBar();
-    void UpdateStatus();
-    Vector2 HitBoxChecking(Vector2);
+    Vector2 BoundChecking(Vector2);
     Vector2 RocketPosition(Vector2);
     void Shooting(std::vector<Bullet>& bullets, Texture2D* bulletTexture);
+    
+    Rectangle getRect();
+    int HitBoxChecking(vector<Bullet*>&);
+    void AdjustStatus(ShipStatus);
+
 };

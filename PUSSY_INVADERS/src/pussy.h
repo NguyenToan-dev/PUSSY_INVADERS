@@ -14,10 +14,10 @@ public:
 
     Rectangle getRect();
 
-    static void LoadImage();     // Gọi sau InitWindow
-    static void UnloadImage();   // Khi thoát game
+    static void LoadImage();     
+    static void UnloadImage();   
 
-    static Texture2D image;      // Dùng chung cho tất cả pussy
+    static Texture2D image;     
     Vector2 position;
     int type;
 };

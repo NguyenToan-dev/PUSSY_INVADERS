@@ -1,3 +1,4 @@
+//GameController.h
 #pragma once
 #include "Background.h"
 #include "MusicController.h"
@@ -6,6 +7,8 @@
 #include "Pussy.h"
 #include<algorithm>
 #include<vector>
+#include "ThunderBullet.h"  
+#include "Pickup.h"//->recently added
 
 class GameController
 {
@@ -14,10 +17,9 @@ private:
     Background background;
     GameOver gameover;
     GameState gameState;
-    float blurOpacity; 
+    float blurOpacity;
     float countdownTimer;
 
-    // recently added
     SpaceShip ship;
     Sound ship_shootsound;
     Sound pussy_shootsound;
@@ -25,7 +27,18 @@ private:
     Texture2D bullet_texture;
     std::vector<Pussy> pussies;
     Texture pussy_shit_texture;
-    std::vector<Bullet> pussyBullets;
+    std::vector<Bullet*> pussyBullets;
+    Texture2D thunder_texture;
+    //std::vector<Bullet*> thunderBullets;
+    Sound thunderSound;
+
+    double timestart;
+    float blinkspeed;
+    float blinkduration;
+    bool isblinking;
+    Color blink1;
+    Color blink2;
+
 
     void DrawPaused();
     void DrawUI();
@@ -39,5 +52,6 @@ public:
     ~GameController();
     void Update();
     void Draw();
+    void HandleObjectDrawing();
 
 };
