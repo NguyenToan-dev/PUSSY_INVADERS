@@ -15,6 +15,17 @@ enum class PickupType {
 
 class Pickup {
 public:
+    // Lấy danh sách pickup (dạng const reference)
+    static const std::vector<Pickup>& GetAll();
+
+    // Getter cho từng pickup (được dùng trong EatPickup)
+    Vector2 GetPosition() const;
+    PickupType GetType() const;
+
+    // Cho phép xóa pickup theo chỉ số
+    static void RemoveAt(int index);
+
+
     Pickup(PickupType t, const Vector2& at);
     // spawn một pickup tại vị trí at
     static void Spawn(const Vector2& at);
@@ -48,6 +59,6 @@ private:
     static bool                isLoaded;
     // để đảm bảo battery chỉ rớt 1 lần
     static bool                batteryDropped;
-
+    int bounceCount;  // <- thêm hiệu ứng nảy   
     static void LoadTextures();
 };
