@@ -1,4 +1,4 @@
-﻿//GameController.cpp
+//GameController.cpp
 #include "GameController.h"
 #include<raylib.h>
 #include<iostream>
@@ -8,8 +8,8 @@ GameController::GameController()
     background = Background();
     music = MusicController();
     gameState = GAME_PLAYING_STATE;
-    gameover = GameOver();
-    blurOpacity = 0.0f;
+    gameover = GameOver();   
+    blurOpacity = 0.0f; 
     countdownTimer = 0.0f;
 
     // recently added
@@ -23,12 +23,12 @@ GameController::GameController()
     Pussy::LoadImage();
     pussies.reserve(18);
     pussy_shit_texture = LoadTexture("image/shit.png");
-    thunder_texture = LoadTexture("image/thunder.png");
-    thunderSound = LoadSound("sound/thunder.mp3");
-    SetSoundVolume(thunderSound, .8f);
-    for (int row = 0; row < 3; row++)
+    thunder_texture = LoadTexture("image/thunder.png"); 
+    thunderSound = LoadSound("sound/thunder.mp3"); 
+    SetSoundVolume(thunderSound, .8f); 
+    for (int row = 0; row < 3; row++) 
     {
-        for (int i = 0; i < 6; i++)
+        for (int i = 0; i < 6; i++) 
         {
             Vector2 pos = { 150.0f + i * 200, 100.0f + row * 100 };
             pussies.emplace_back(1, pos);
@@ -46,7 +46,7 @@ GameController::~GameController()
 {
     UnloadTexture(background.GetTexture());
     UnloadMusicStream(music.GetMusic());
-
+    
     // recently added
     UnloadTexture(bullet_texture);
     UnloadSound(ship_shootsound);
@@ -58,38 +58,38 @@ GameController::~GameController()
     UnloadSound(thunderSound);
 }
 
-void GameController::Update()
+void GameController::Update() 
 {
-    if (gameState == GAME_PLAYING_STATE)
+    if (gameState == GAME_PLAYING_STATE) 
     {
         background.SetRotation(background.GetRotation() + background.GetSpeed() * GetFrameTime());
         music.HandleMusic(gameState);
         HandleInput();
     }
-    else if (gameState == GAME_GAME_OVER)
+    else if (gameState == GAME_GAME_OVER) 
     {
-        if (gameover.GetPhase() == FREEZE || gameover.GetPhase() == FADE_BLUR)
-            background.SetRotation(background.GetRotation() + background.GetSpeed() *
+        if (gameover.GetPhase() == FREEZE || gameover.GetPhase() == FADE_BLUR) 
+            background.SetRotation(background.GetRotation() + background.GetSpeed() * 
                 GetFrameTime() * SLOW_MOTION_FACTOR);
         gameover.HandleGameOver(blurOpacity);
-        if (gameover.GetPhase() == TEXT_DISPLAY && IsKeyPressed(KEY_R))
+        if (gameover.GetPhase() == TEXT_DISPLAY && IsKeyPressed(KEY_R)) 
             HandleInput();
     }
-    else if (gameState == GAME_COUNTDOWN)
+    else if (gameState == GAME_COUNTDOWN) 
     {
-        float speedFactor = SLOW_MOTION_FACTOR +
+        float speedFactor = SLOW_MOTION_FACTOR + 
             (1.0f - SLOW_MOTION_FACTOR) * (countdownTimer / COUNTDOWN_DURATION);
         background.SetRotation(background.GetRotation() + background.GetSpeed() * GetFrameTime() * speedFactor);
         HandleCountdown();
         music.HandleMusic(gameState);
     }
-    else if (gameState == GAME_PAUSED)
+    else if (gameState == GAME_PAUSED) 
     {
-        if (music.IsMusicLoaded())
+        if (music.IsMusicLoaded()) 
             UpdateMusicStream(music.GetMusic());
         HandleInput();
     }
-    if (IsWindowResized())
+    if (IsWindowResized()) 
     {
         background.SetCenter((float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f);
         background.CalculateBackgroundScale();
@@ -98,10 +98,10 @@ void GameController::Update()
     Pickup::UpdateAll(GetFrameTime());//->Cập nhật tất cả pickups mỗi frame
 }
 
-void GameController::HandleCountdown()
+void GameController::HandleCountdown() 
 {
     countdownTimer += GetFrameTime();
-    if (countdownTimer >= COUNTDOWN_DURATION)
+    if (countdownTimer >= COUNTDOWN_DURATION) 
     {
         gameState = GAME_PLAYING_STATE;
         gameover.SetPhase(FREEZE);
@@ -111,43 +111,43 @@ void GameController::HandleCountdown()
     }
 }
 
-void GameController::HandleInput()
+void GameController::HandleInput() 
 {
     MusicState state = music.GetState();
     float mvolume = music.GetMVolume();
 
-    if (gameState == GAME_PLAYING_STATE)
+    if (gameState == GAME_PLAYING_STATE) 
     {
-        if (IsKeyPressed(KEY_M) && music.IsMusicLoaded())
+        if (IsKeyPressed(KEY_M) && music.IsMusicLoaded()) 
         {
-            if (state == MUSIC_PLAYING || state == MUSIC_FADING_IN)
+            if (state == MUSIC_PLAYING || state == MUSIC_FADING_IN) 
                 music.SetState(MUSIC_FADING_OUT);
-
-            else if (state == MUSIC_IDLE)
+            
+            else if (state == MUSIC_IDLE) 
             {
                 music.SetState(MUSIC_FADING_IN);
                 PlayMusicStream(music.GetMusic());
             }
         }
-        if (IsKeyPressed(KEY_EQUAL) || IsKeyPressed(KEY_KP_ADD))
+        if (IsKeyPressed(KEY_EQUAL) || IsKeyPressed(KEY_KP_ADD)) 
         {
             music.SetMVolume(std::min(1.0f, mvolume + 0.1f));
             mvolume = music.GetMVolume();
             music.SetVolumeNow(mvolume);
         }
-        if (IsKeyPressed(KEY_MINUS) || IsKeyPressed(KEY_KP_SUBTRACT))
+        if (IsKeyPressed(KEY_MINUS) || IsKeyPressed(KEY_KP_SUBTRACT)) 
         {
             music.SetMVolume(std::max(0.0f, mvolume - 0.1f));
             mvolume = music.GetMVolume();
             music.SetVolumeNow(mvolume);
         }
-        if (IsKeyPressed(KEY_G))
+        if (IsKeyPressed(KEY_G)) 
         {
             gameState = GAME_GAME_OVER;
             gameover.SetPhase(FREEZE);
             gameover.SetTime(0.0f);
             blurOpacity = 0.0f;
-            if (music.IsMusicLoaded())
+            if (music.IsMusicLoaded()) 
             {
                 StopMusicStream(music.GetMusic());
                 music.SetState(MUSIC_IDLE);
@@ -157,10 +157,10 @@ void GameController::HandleInput()
             }
             std::cout << "Game Over triggered\n";
         }
-        if (IsKeyPressed(KEY_P))
+        if (IsKeyPressed(KEY_P)) 
         {
             gameState = GAME_PAUSED;
-            if (music.IsMusicLoaded())
+            if (music.IsMusicLoaded()) 
             {
                 music.SetPVolume(music.GetCVolume());
                 PauseMusicStream(music.GetMusic());
@@ -171,7 +171,7 @@ void GameController::HandleInput()
             }
             std::cout << "Game paused\n";
         }
-        if (IsKeyPressed(KEY_F))
+        if (IsKeyPressed(KEY_F)) 
         {
             ToggleFullscreen();
             background.SetCenter((float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f);
@@ -179,15 +179,15 @@ void GameController::HandleInput()
             std::cout << "Toggled fullscreen\n";
         }
     }
-    else if (gameState == GAME_PAUSED)
+    else if (gameState == GAME_PAUSED) 
     {
-        if (IsKeyPressed(KEY_P))
+        if (IsKeyPressed(KEY_P)) 
         {
             gameState = GAME_COUNTDOWN;
             countdownTimer = 0.0f;
-            if (music.IsMusicLoaded())
+            if (music.IsMusicLoaded()) 
             {
-                if (!IsMusicStreamPlaying(music.GetMusic()))
+                if (!IsMusicStreamPlaying(music.GetMusic())) 
                 {
                     PlayMusicStream(music.GetMusic());
                     UpdateMusicStream(music.GetMusic());
@@ -201,13 +201,13 @@ void GameController::HandleInput()
             std::cout << "Countdown started\n";
         }
     }
-    else if (gameState == GAME_GAME_OVER && gameover.GetPhase() == TEXT_DISPLAY)
+    else if (gameState == GAME_GAME_OVER && gameover.GetPhase() == TEXT_DISPLAY) 
     {
-        if (IsKeyPressed(KEY_R))
+        if (IsKeyPressed(KEY_R)) 
         {
             gameState = GAME_COUNTDOWN;
             countdownTimer = 0.0f;
-            if (music.IsMusicLoaded())
+            if (music.IsMusicLoaded()) 
             {
                 PlayMusicStream(music.GetMusic());
                 music.SetState(MUSIC_FADING_IN);
@@ -223,29 +223,29 @@ void GameController::HandleInput()
 void GameController::HandleObjectDrawing()
 {
     background.DrawRotatingBackground();
-
-    for (auto pussy : pussies)
+    
+    for(auto pussy : pussies)
         pussy.Draw();
 
     double elapsedTime = GetTime() - timestart;
     Color currentOverlayColor;
-    if (elapsedTime >= blinkduration)
+    if(elapsedTime >= blinkduration)
         isblinking = false;
-    else
+    else 
     {
         if (isblinking)
             currentOverlayColor = ((int)(elapsedTime * blinkspeed) % 2 == 0) ? blink1 : blink2;
     }
 
-    if (isblinking)
+    if(isblinking)
         goto Skip_Ship_Bullets;
 
-    if (IsKeyPressed(KEY_SPACE))
+    if(IsKeyPressed(KEY_SPACE))
         ship.Shooting(bullets, &bullet_texture), PlaySound(ship_shootsound);
 
-    for (int i = 0; i < (int)bullets.size(); i++)
+    for(int i=0; i<(int)bullets.size(); i++)
     {
-        if (bullets[i].active == false)
+        if(bullets[i].active == false)
         {
             bullets.erase(bullets.begin() + i);
             i--;
@@ -255,9 +255,9 @@ void GameController::HandleObjectDrawing()
         bullets[i].Draw();
     }
 
-    for (auto& bullet : bullets)
+    for (auto& bullet : bullets) 
     {
-        if (!bullet.active)
+        if (!bullet.active) 
             continue;
         //////////////////////////////////////////////////
         for (auto& pussy : pussies)
@@ -283,9 +283,9 @@ void GameController::HandleObjectDrawing()
         }////->update code here
     }
 
-    for (int i = 0; i < (int)pussies.size(); i++)
+    for(int i=0; i<(int)pussies.size(); i++)
     {
-        if (pussies[i].position.x < 0)
+        if(pussies[i].position.x < 0)
         {
             pussies.erase(pussies.begin() + i);
             i--;
@@ -295,22 +295,22 @@ void GameController::HandleObjectDrawing()
 Skip_Ship_Bullets:
 
     bool reachEdge = false;
-    for (auto& pussy : pussies)
+    for (auto& pussy : pussies) 
     {
         pussy.Update(Pussy::pussyDirection);
         Rectangle r = pussy.getRect();
-        if (r.x < 0 || r.x + r.width > GetScreenWidth())
+        if (r.x < 0 || r.x + r.width > GetScreenWidth()) 
             reachEdge = true;
     }
-    if (reachEdge)
+    if (reachEdge) 
     {
         Pussy::pussyDirection = -(Pussy::pussyDirection);
-        for (auto& pussy : pussies)
+        for (auto& pussy : pussies) 
             pussy.position.y += 20;
     }
 
     Pussy::pussyShootTimer += GetFrameTime();
-    if (Pussy::pussyShootTimer >= Pussy::pussyShootInterval && !pussies.empty())
+    if (Pussy::pussyShootTimer >= Pussy::pussyShootInterval && !pussies.empty()) 
     {
         Pussy::pussyShootTimer = 0.0f;
         int idx = GetRandomValue(0, pussies.size() - 1);
@@ -324,16 +324,15 @@ Skip_Ship_Bullets:
         Bullet* newBullet;
         if (randType == 1) {
             newBullet = new ThunderBullet(pos, &thunder_texture);
-            PlaySound(thunderSound);
-        }
-        else {
+            PlaySound(thunderSound); 
+        } else {
             newBullet = new Bullet(pos, &pussy_shit_texture);
             newBullet->speed = -newBullet->speed;
         }
 
         pussyBullets.push_back(newBullet);
         PlaySound(pussy_shootsound);
-    }
+    }   
 
     for (int i = 0; i < (int)pussyBullets.size(); i++) {
         if (!pussyBullets[i]->active) {
@@ -345,15 +344,15 @@ Skip_Ship_Bullets:
         pussyBullets[i]->Draw();
     }
 
-    if (!isblinking)
+    if(!isblinking)
     {
         int flag = ship.HitBoxChecking(pussyBullets);  // Get hit and run out of lives
-        if (flag == 2)
+        if(flag == 2)
         {
             gameState = GAME_GAME_OVER;
             return;
         }
-        else if (flag == 1)
+        else if(flag == 1)
         {
             // Make the spaceship blink for 3 seconds
             timestart = GetTime();
@@ -362,31 +361,33 @@ Skip_Ship_Bullets:
             return;
         }
     }
-
-    if (isblinking)
+    
+    if(isblinking)
         ship.MovingWhileBlinking(currentOverlayColor);    // temporary tint color
     else
         ship.Moving();
+    ship.EatPickup();  // <--dòng này để tàu kiểm tra và ăn pickup
+
     ship.StatusBar();
     return;
 }
 
-void GameController::Draw()
+void GameController::Draw() 
 {
     HandleObjectDrawing();
 
     if (gameState == GAME_GAME_OVER)
-        DrawGameOver();
+        DrawGameOver();    
     else if (gameState == GAME_COUNTDOWN)
-        DrawCountdown();
+        DrawCountdown();   
     else if (gameState == GAME_PAUSED)
-        DrawPaused();
+        DrawPaused();   
     //else DrawUI();
 
     Pickup::DrawAll();//recently added
 }
 
-void GameController::DrawGameOver()
+void GameController::DrawGameOver() 
 {
     float width = background.GetTexture().width;
     float height = background.GetTexture().height;
@@ -400,42 +401,42 @@ void GameController::DrawGameOver()
         { x, y, width * scale, height * scale },
         { (width * scale) * 0.5f, (height * scale) * 0.5f },
         rotation, { 255, 255, 255, 255 });
-    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(),
+    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), 
         { 0, 0, 0, (unsigned char)std::min(blurOpacity, (float)MAX_BLUR_OPACITY) });
 
-    switch (gameover.GetPhase())
+    switch (gameover.GetPhase()) 
     {
-    case FREEZE:
-    case FADE_BLUR:
-        break;
+        case FREEZE:
+        case FADE_BLUR:
+            break;
 
-    case RED_FLASH:
-        DrawRectangleLinesEx({ 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight() },
-            10, { 255, 0, 0, 200 });
-        break;
+        case RED_FLASH:
+            DrawRectangleLinesEx({ 0, 0, (float)GetScreenWidth(), (float)GetScreenHeight() }, 
+                10, { 255, 0, 0, 200 });
+            break;
 
-    case TEXT_DISPLAY:
-        const char* gameOverText = "GAME OVER";
-        int fontSize = 80;
-        int textWidth = MeasureText(gameOverText, fontSize);
-        DrawText(gameOverText, (GetScreenWidth() - textWidth) / 2,
-            GetScreenHeight() / 2 - fontSize / 2, fontSize, RED);
-        const char* restartText = "Press R to Restart";
-        int restartFontSize = 30;
-        int restartTextWidth = MeasureText(restartText, restartFontSize);
-        DrawText(restartText, (GetScreenWidth() - restartTextWidth) / 2,
-            GetScreenHeight() / 2 + fontSize, restartFontSize, WHITE);
-        break;
+        case TEXT_DISPLAY:
+            const char* gameOverText = "GAME OVER";
+            int fontSize = 80;
+            int textWidth = MeasureText(gameOverText, fontSize);
+            DrawText(gameOverText, (GetScreenWidth() - textWidth) / 2, 
+                GetScreenHeight() / 2 - fontSize / 2, fontSize, RED);
+            const char* restartText = "Press R to Restart";
+            int restartFontSize = 30;
+            int restartTextWidth = MeasureText(restartText, restartFontSize);
+            DrawText(restartText, (GetScreenWidth() - restartTextWidth) / 2, 
+                GetScreenHeight() / 2 + fontSize, restartFontSize, WHITE);
+            break;
     }
 }
-
-void GameController::DrawCountdown()
+    
+void GameController::DrawCountdown() 
 {
     background.DrawRotatingBackground();
     float fadeOutOpacity = MAX_BLUR_OPACITY * (1.0f - countdownTimer / COUNTDOWN_DURATION);
     DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 0, 0, (unsigned char)fadeOutOpacity });
     int count = 3 - static_cast<int>(countdownTimer);
-    if (count >= 1)
+    if (count >= 1) 
     {
         const char* countText = TextFormat("%d", count);
         int fontSize = 100;
@@ -445,7 +446,7 @@ void GameController::DrawCountdown()
     }
 }
 
-void GameController::DrawPaused()
+void GameController::DrawPaused() 
 {
     background.DrawRotatingBackground();
     DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), { 0, 0, 0, 150 });
@@ -457,11 +458,11 @@ void GameController::DrawPaused()
     const char* resumeText = "Press P to Resume";
     int resumeFontSize = 30;
     int resumeTextWidth = MeasureText(resumeText, resumeFontSize);
-    DrawText(resumeText, (GetScreenWidth() - resumeTextWidth) / 2,
+    DrawText(resumeText, (GetScreenWidth() - resumeTextWidth) / 2, 
         GetScreenHeight() / 2 + fontSize, resumeFontSize, WHITE);
 }
 
-void GameController::DrawUI()
+void GameController::DrawUI() 
 {
     DrawText("Pussy Invaders", 50, 50, 40, WHITE);
     DrawFPS(GetScreenWidth() - 100, 10);
@@ -471,20 +472,20 @@ void GameController::DrawUI()
     DrawText("G - Trigger Game Over (Test)", 10, 165, 16, RAYWHITE);
     DrawText("P - Pause Game", 10, 185, 16, RAYWHITE);
     DrawText("F - Toggle Fullscreen", 10, 205, 16, RAYWHITE);
-    if (music.IsMusicLoaded())
+    if (music.IsMusicLoaded()) 
     {
         const char* statusText = "Idle";
-        switch (music.GetState())
+        switch (music.GetState()) 
         {
-        case MUSIC_PLAYING: statusText = "Playing"; break;
-        case MUSIC_FADING_IN: statusText = "Fading In"; break;
-        case MUSIC_FADING_OUT: statusText = "Fading Out"; break;
-        case MUSIC_IDLE: statusText = (gameState == GAME_GAME_OVER) ? "Stopped" : "Idle"; break;
-        case MUSIC_PAUSED: statusText = "Paused"; break;
+            case MUSIC_PLAYING: statusText = "Playing"; break;
+            case MUSIC_FADING_IN: statusText = "Fading In"; break;
+            case MUSIC_FADING_OUT: statusText = "Fading Out"; break;
+            case MUSIC_IDLE: statusText = (gameState == GAME_GAME_OVER) ? "Stopped" : "Idle"; break;
+            case MUSIC_PAUSED: statusText = "Paused"; break;
         }
         DrawText(TextFormat("Music: %s (Vol: %.0f%%)", statusText, music.GetCVolume() * 100), 10, 230, 16, LIME);
     }
-    else
+    else 
         DrawText("Music: Not Loaded", 10, 230, 16, RED);
 }
 
