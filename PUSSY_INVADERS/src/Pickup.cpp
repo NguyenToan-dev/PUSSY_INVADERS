@@ -13,8 +13,27 @@ bool Pickup::isLoaded = false;
 bool Pickup::batteryDropped = false;
 float Pickup::giftTimer = 0.0f;
 
+const std::vector<Pickup>& Pickup::GetAll() {
+    return pickups;
+}
+
+Vector2 Pickup::GetPosition() const {
+    return position;
+}
+
+PickupType Pickup::GetType() const {
+    return type;
+}
+
+void Pickup::RemoveAt(int index) {
+    if (index >= 0 && index < (int)pickups.size()) {
+        pickups.erase(pickups.begin() + index);
+    }
+}
+
+
 // ------------------------------------------------------------
-// Lazy-load textures
+// load textures
 // ------------------------------------------------------------
 void Pickup::LoadTextures() {
     if (isLoaded) return;
@@ -33,9 +52,15 @@ void Pickup::LoadTextures() {
 // private ctor
 // ------------------------------------------------------------
 Pickup::Pickup(PickupType t, const Vector2& at)
-    : type(t), position(at), velocity({ 0, 200 }), lifeTime(0.0f), hasBounced(false), rotationAngle(0.0f)
+    : type(t), position(at), velocity({ 0, 200 }), lifeTime(0.0f),
+    hasBounced(false), bounceCount(0), rotationAngle(0.0f)
 {
+    if (t == PickupType::Gift1 || t == PickupType::Gift2 || t == PickupType::Gift3) {
+        velocity = { 0, 50 };  // tốc độ rơi khởi đầu quà rất chậm
+    }
 }
+
+
 
 // ------------------------------------------------------------
 // Spawn: decide loại
@@ -44,22 +69,28 @@ void Pickup::Spawn(const Vector2& at) {
     LoadTextures();
 
     PickupType chosen;
+
     if (!batteryDropped) {
-        int r = GetRandomValue(1, 3);
+        int r = GetRandomValue(1, 5); // 1/5 xác suất để chọn Battery (20%)
         if (r == 1) {
             chosen = PickupType::Battery;
             batteryDropped = true;
         }
         else {
-            chosen = (GetRandomValue(0, 1) == 0 ? PickupType::Milk : PickupType::Sushi);
+            // Chọn giữa Sushi (80%) và Milk (20%)
+            int m = GetRandomValue(1, 100);
+            chosen = (m <= 20) ? PickupType::Milk : PickupType::Sushi;
         }
     }
     else {
-        chosen = (GetRandomValue(0, 1) == 0 ? PickupType::Milk : PickupType::Sushi);
+        // Battery đã rớt rồi -> chỉ chọn giữa Milk và Sushi
+        int m = GetRandomValue(1, 100);
+        chosen = (m <= 20) ? PickupType::Milk : PickupType::Sushi;
     }
 
     pickups.emplace_back(chosen, at);
 }
+
 
 // ------------------------------------------------------------
 // SpawnGift: tự động từ Pickup
@@ -116,31 +147,57 @@ void Pickup::Update(float dt) {
 
     float groundY = (float)GetScreenHeight() - 50;
 
-    // Nếu là hộp quà thì rơi thẳng, không bounce
     if (type == PickupType::Gift1 || type == PickupType::Gift2 || type == PickupType::Gift3) {
+        // Gift rơi thẳng, biến mất khi chạm đáy
         if (position.y >= groundY) {
             position.y = groundY;
             velocity = { 0, 0 };
+            lifeTime = 4.0f;  // đánh dấu để xóa trong UpdateAll
         }
-    }
-    else {
-        // Các loại khác có bounce
-        if (!hasBounced && position.y >= groundY) {
-            hasBounced = true;
-            position.y = groundY;
-            velocity.y = -velocity.y * 0.5f;
-            velocity.x = (GetRandomValue(0, 1) ? 1.f : -1.f) * 100.f;
-        }
-        if (hasBounced) {
-            velocity.y += 800.f * dt;
-            if (fabsf(velocity.y) < 50.f) velocity.y = 0;
+        else {
+            // Giảm tốc độ rơi bằng cách giảm trọng lực 
+            velocity.y += 100.f * dt;
         }
     }
 
-    // Góc xoay cập nhật liên tục
-    rotationAngle += 180.f * dt; // 180 độ mỗi giây
+    else {
+        // Bounce 2 lần: cao -> thấp -> dừng
+        if (position.y >= groundY) {
+            if (bounceCount == 0) {
+                // Lần 1: bounce cao
+                bounceCount++;
+                position.y = groundY;
+                velocity.y = -400.f;
+                velocity.x = (GetRandomValue(0, 1) ? 1.f : -1.f) * 80.f;
+            }
+            else if (bounceCount == 1) {
+                // Lần 2: bounce thấp hơn
+                bounceCount++;
+                position.y = groundY;
+                velocity.y = -250.f;
+                velocity.x *= 0.5f;  // giảm trượt
+            }
+            else {
+                // Lần 3: dừng
+                position.y = groundY;
+                velocity = { 0, 0 };
+            }
+        }
+
+        // Trọng lực
+        velocity.y += 800.f * dt;
+
+        // Nếu tốc độ quá nhỏ thì cho dừng hẳn
+        if (bounceCount >= 2 && fabsf(velocity.y) < 30.f) {
+            velocity.y = 0;
+        }
+    }
+
+    // Góc xoay
+    rotationAngle += 180.f * dt;
     if (rotationAngle >= 360.f) rotationAngle -= 360.f;
 }
+
 
 // ------------------------------------------------------------
 // instance Draw (có xoay)
