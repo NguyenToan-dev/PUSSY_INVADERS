@@ -1,4 +1,6 @@
-﻿#include "SpaceShip.h"
+//SpcaeShip.cpp
+#include "SpaceShip.h"
+#include "Pickup.h"
 #include <random>
 
 int SpaceShip::heat_limit = 2000;
@@ -148,9 +150,69 @@ void SpaceShip::UpdateStatus(ShipStatus flag)
         }
         missile_counter++;
     }
-    else if(flag == SUSHI_ADD)  {}  // collect a sushi roll -> increase thigh_counter
-    else if(flag == FISH_ADD)   {}  //  collect a full set of sushi -> increase thigh_counter
-    else if(flag == NEW_BULLET) {}  // Switch to new bullet's type, at the moment just one new type
+    else if (flag == SUSHI_ADD)
+    {
+        sushi_collected++;
+
+        int totalSushiValue = sushi_collected + milk_collected * 5;
+        while (totalSushiValue >= 10) {
+            missile_counter++;
+            if (missile_counter > 10) missile_counter = 10;
+
+            // Trừ sushi
+            if (sushi_collected >= 10) {
+                sushi_collected -= 10;
+            }
+            else {
+                int remaining = 10 - sushi_collected;
+                sushi_collected = 0;
+                int milkToUse = (remaining + 4) / 5; // làm tròn lên
+                milk_collected -= milkToUse;
+                if (milk_collected < 0) milk_collected = 0;
+            }
+
+            totalSushiValue = sushi_collected + milk_collected * 5;
+        }
+    }
+    else if (flag == MILK_ADD)
+    {
+        milk_collected++;
+
+        int totalSushiValue = sushi_collected + milk_collected * 5;
+        while (totalSushiValue >= 10) {
+            missile_counter++;
+            if (missile_counter > 10) missile_counter = 10;
+
+            // Trừ sushi
+            if (sushi_collected >= 10) {
+                sushi_collected -= 10;
+            }
+            else {
+                int remaining = 10 - sushi_collected;
+                sushi_collected = 0;
+                int milkToUse = (remaining + 4) / 5;
+                milk_collected -= milkToUse;
+                if (milk_collected < 0) milk_collected = 0;
+            }
+
+            totalSushiValue = sushi_collected + milk_collected * 5;
+        }
+    }
+    else if (flag == NEW_BULLET)
+    {
+        // logic thay đổi đạn – ví dụ như đổi texture, bulletType, hoặc đặt 1 flag để kiểm tra
+        // giả định: có biến bool isNewBullet
+        // isNewBullet = true;
+    }
+    else if (flag == LEVEL_UP)
+    {
+        battery_collected++;
+        if (weapon_level >= 5)
+            weapon_level = 5;
+        else
+            weapon_level++;
+    }
+
     return;
 }
 
@@ -233,3 +295,43 @@ int SpaceShip::HitBoxChecking(vector<Bullet*> &bullets)
     }
     return 0;
 }
+void SpaceShip::EatPickup()
+{
+    Rectangle shipRect = getRect();
+    const auto& allPickups = Pickup::GetAll();
+
+    for (int i = 0; i < (int)allPickups.size(); ++i) {
+        Vector2 pickupPos = allPickups[i].GetPosition();
+        float size = 40.f;
+
+        Rectangle pickupRect = {
+            pickupPos.x - size / 2,
+            pickupPos.y - size / 2,
+            size,
+            size
+        };
+
+        if (CheckCollisionRecs(shipRect, pickupRect)) {
+            PickupType type = allPickups[i].GetType();
+            switch (type) {
+            case PickupType::Sushi:
+                AdjustStatus(SUSHI_ADD); break;
+            case PickupType::Milk:
+                AdjustStatus(MILK_ADD); break;
+            case PickupType::Battery:
+                AdjustStatus(LEVEL_UP); break;
+            case PickupType::Gift1:
+            case PickupType::Gift2:
+            case PickupType::Gift3:
+                AdjustStatus(NEW_BULLET); break;
+            default:
+                break;
+            }
+
+            // Xóa pickup thông qua hàm tĩnh
+            Pickup::RemoveAt(i);
+            --i;
+        }
+    }
+}
+
