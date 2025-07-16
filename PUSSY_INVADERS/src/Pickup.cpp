@@ -1,7 +1,7 @@
 #include "Pickup.h"
 #include <raylib.h>
 
-// — static members —
+// — static members initialization —
 std::vector<Pickup> Pickup::pickups;
 Texture2D Pickup::texSushi{};
 Texture2D Pickup::texBattery{};
@@ -13,34 +13,36 @@ bool Pickup::isLoaded = false;
 bool Pickup::batteryDropped = false;
 float Pickup::giftTimer = 0.0f;
 
+// Trả về danh sách pickup hiện có
 const std::vector<Pickup>& Pickup::GetAll() {
     return pickups;
 }
 
+// Getter vị trí
 Vector2 Pickup::GetPosition() const {
     return position;
 }
 
+// Getter loại
 PickupType Pickup::GetType() const {
     return type;
 }
 
+// Xóa pickup tại index khỏi vector
 void Pickup::RemoveAt(int index) {
     if (index >= 0 && index < (int)pickups.size()) {
         pickups.erase(pickups.begin() + index);
     }
 }
 
-
 // ------------------------------------------------------------
-// load textures
+// Load các texture – chỉ load 1 lần duy nhất
 // ------------------------------------------------------------
 void Pickup::LoadTextures() {
     if (isLoaded) return;
     texSushi = LoadTexture("image/sushi.png");
     texBattery = LoadTexture("image/battery.png");
     texMilk = LoadTexture("image/milk.png");
-
     texGift1 = LoadTexture("image/gift-1.png");
     texGift2 = LoadTexture("image/gift-2.png");
     texGift3 = LoadTexture("image/gift-3.png");
@@ -49,21 +51,22 @@ void Pickup::LoadTextures() {
 }
 
 // ------------------------------------------------------------
-// private ctor
+// Constructor: khởi tạo một pickup tại vị trí `at` với loại `t`
 // ------------------------------------------------------------
 Pickup::Pickup(PickupType t, const Vector2& at)
     : type(t), position(at), velocity({ 0, 200 }), lifeTime(0.0f),
     hasBounced(false), bounceCount(0), rotationAngle(0.0f)
 {
+    // Nếu là Gift thì rơi chậm hơn nhiều
     if (t == PickupType::Gift1 || t == PickupType::Gift2 || t == PickupType::Gift3) {
-        velocity = { 0, 50 };  // tốc độ rơi khởi đầu quà rất chậm
+        velocity = { 0, 50 };
     }
 }
 
-
-
 // ------------------------------------------------------------
-// Spawn: decide loại
+// Tạo ngẫu nhiên một pickup tại vị trí `at`
+// - Có 20% cơ hội là Battery (nếu chưa từng rơi)
+// - Còn lại là Sushi (80%) hoặc Milk (20%)
 // ------------------------------------------------------------
 void Pickup::Spawn(const Vector2& at) {
     LoadTextures();
@@ -71,19 +74,18 @@ void Pickup::Spawn(const Vector2& at) {
     PickupType chosen;
 
     if (!batteryDropped) {
-        int r = GetRandomValue(1, 5); // 1/5 xác suất để chọn Battery (20%)
+        int r = GetRandomValue(1, 5); // 1/5 -> Battery
         if (r == 1) {
             chosen = PickupType::Battery;
             batteryDropped = true;
         }
         else {
-            // Chọn giữa Sushi (80%) và Milk (20%)
             int m = GetRandomValue(1, 100);
             chosen = (m <= 20) ? PickupType::Milk : PickupType::Sushi;
         }
     }
     else {
-        // Battery đã rớt rồi -> chỉ chọn giữa Milk và Sushi
+        // Battery đã rơi rồi -> bỏ qua
         int m = GetRandomValue(1, 100);
         chosen = (m <= 20) ? PickupType::Milk : PickupType::Sushi;
     }
@@ -91,9 +93,8 @@ void Pickup::Spawn(const Vector2& at) {
     pickups.emplace_back(chosen, at);
 }
 
-
 // ------------------------------------------------------------
-// SpawnGift: tự động từ Pickup
+// Tự động sinh gift sau mỗi 15s
 // ------------------------------------------------------------
 void Pickup::SpawnGift() {
     int r = GetRandomValue(1, 3);
@@ -109,11 +110,14 @@ void Pickup::SpawnGift() {
 }
 
 // ------------------------------------------------------------
-// UpdateAll & remove sau 4s
+// Cập nhật tất cả pickup: di chuyển, xóa nếu quá hạn
+// - Tạo gift sau mỗi 15s
+// - Xóa pickup sau 4s
 // ------------------------------------------------------------
 void Pickup::UpdateAll(float dt) {
     LoadTextures();
 
+    // Gift timer – đếm 15s
     giftTimer += dt;
     if (giftTimer >= 15.0f) {
         giftTimer = 0.f;
@@ -123,6 +127,8 @@ void Pickup::UpdateAll(float dt) {
     for (int i = 0; i < (int)pickups.size(); ++i) {
         pickups[i].Update(dt);
         pickups[i].lifeTime += dt;
+
+        // Sau 4 giây thì tự động biến mất
         if (pickups[i].lifeTime >= 4.0f) {
             pickups.erase(pickups.begin() + i);
             --i;
@@ -131,7 +137,7 @@ void Pickup::UpdateAll(float dt) {
 }
 
 // ------------------------------------------------------------
-// DrawAll
+// Vẽ toàn bộ pickup ra màn hình
 // ------------------------------------------------------------
 void Pickup::DrawAll() {
     for (auto& p : pickups)
@@ -139,7 +145,7 @@ void Pickup::DrawAll() {
 }
 
 // ------------------------------------------------------------
-// instance Update: rơi, bounce, trượt + xoay
+// Cập nhật vị trí, bounce, rơi, xoay của một pickup
 // ------------------------------------------------------------
 void Pickup::Update(float dt) {
     position.x += velocity.x * dt;
@@ -148,37 +154,36 @@ void Pickup::Update(float dt) {
     float groundY = (float)GetScreenHeight() - 50;
 
     if (type == PickupType::Gift1 || type == PickupType::Gift2 || type == PickupType::Gift3) {
-        // Gift rơi thẳng, biến mất khi chạm đáy
+        // Gift: rơi thẳng, không nảy
         if (position.y >= groundY) {
             position.y = groundY;
             velocity = { 0, 0 };
-            lifeTime = 4.0f;  // đánh dấu để xóa trong UpdateAll
+            lifeTime = 4.0f; // đánh dấu để xóa
         }
         else {
-            // Giảm tốc độ rơi bằng cách giảm trọng lực 
-            velocity.y += 100.f * dt;
+            velocity.y += 100.f * dt; // trọng lực nhẹ
         }
     }
 
     else {
-        // Bounce 2 lần: cao -> thấp -> dừng
+        // Sushi/Milk/Battery – có hiệu ứng nảy
         if (position.y >= groundY) {
             if (bounceCount == 0) {
-                // Lần 1: bounce cao
+                // Bounce lần 1: cao và trượt mạnh
                 bounceCount++;
                 position.y = groundY;
                 velocity.y = -400.f;
                 velocity.x = (GetRandomValue(0, 1) ? 1.f : -1.f) * 80.f;
             }
             else if (bounceCount == 1) {
-                // Lần 2: bounce thấp hơn
+                // Bounce lần 2: thấp hơn
                 bounceCount++;
                 position.y = groundY;
                 velocity.y = -250.f;
-                velocity.x *= 0.5f;  // giảm trượt
+                velocity.x *= 0.5f;
             }
             else {
-                // Lần 3: dừng
+                // Sau 2 lần thì đứng yên
                 position.y = groundY;
                 velocity = { 0, 0 };
             }
@@ -187,20 +192,19 @@ void Pickup::Update(float dt) {
         // Trọng lực
         velocity.y += 800.f * dt;
 
-        // Nếu tốc độ quá nhỏ thì cho dừng hẳn
+        // Nếu rơi quá chậm thì dừng luôn
         if (bounceCount >= 2 && fabsf(velocity.y) < 30.f) {
             velocity.y = 0;
         }
     }
 
-    // Góc xoay
+    // Xoay hình ảnh
     rotationAngle += 180.f * dt;
     if (rotationAngle >= 360.f) rotationAngle -= 360.f;
 }
 
-
 // ------------------------------------------------------------
-// instance Draw (có xoay)
+// Vẽ 1 pickup với xoay
 // ------------------------------------------------------------
 void Pickup::Draw() const {
     Texture2D tex;
