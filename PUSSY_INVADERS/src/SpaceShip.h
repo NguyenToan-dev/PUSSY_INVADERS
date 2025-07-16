@@ -49,5 +49,5 @@ public:
     Rectangle getRect();
     int HitBoxChecking(vector<Bullet*>&);
     void AdjustStatus(ShipStatus);
-    void EatPickup(); // Gọi mỗi frame trong GameController::Update(), hoặc bên trong ship.Update()
+    void EatPickup(); // để ăn pickup
 };
