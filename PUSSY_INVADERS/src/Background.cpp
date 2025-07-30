@@ -1,11 +1,11 @@
-﻿#include "Background.h"
+#include "Background.h"
 #include<algorithm>
 #include<cmath>
 
 Background::Background()
 {
     backgroundRotation = .0;
-    rotationSpeed = .1;
+    rotationSpeed = .4;
     backgroundScale = 1.0f;
     backgroundTexture = LoadTexture("image/Background-1.jpg");
     CalculateBackgroundScale();

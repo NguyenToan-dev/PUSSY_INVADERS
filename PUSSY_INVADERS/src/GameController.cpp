@@ -1,3 +1,4 @@
+//GameController.cpp
 #include "GameController.h"
 #include<raylib.h>
 #include<iostream>
@@ -16,12 +17,15 @@ GameController::GameController()
     ship_shootsound = LoadSound("sound/lasergun.wav");
     pussy_shootsound = LoadSound("sound/bom.mp3");
     SetSoundVolume(ship_shootsound, 1.0f);
-    SetSoundVolume(pussy_shootsound, .5f);
+    SetSoundVolume(pussy_shootsound, .4f);
     bullets.reserve(20);
     bullet_texture = LoadTexture("image/bullet.png");
     Pussy::LoadImage();
     pussies.reserve(18);
     pussy_shit_texture = LoadTexture("image/shit.png");
+    thunder_texture = LoadTexture("image/thunder.png"); 
+    thunderSound = LoadSound("sound/thunder.mp3"); 
+    SetSoundVolume(thunderSound, .8f); 
     for (int row = 0; row < 3; row++) 
     {
         for (int i = 0; i < 6; i++) 
@@ -30,6 +34,12 @@ GameController::GameController()
             pussies.emplace_back(1, pos);
         }
     }
+
+    isblinking = false;
+    blinkspeed = 10.f;
+    blinkduration = 2.f;
+    blink1 = { 0, 0, 0, 100 };   // Semi-transparent black (R, G, B, Alpha)
+    blink2 = { 255, 255, 255, 100 }; // Semi-transparent white
 }
 
 GameController::~GameController()
@@ -42,6 +52,10 @@ GameController::~GameController()
     UnloadSound(ship_shootsound);
     UnloadSound(pussy_shootsound);
     Pussy::UnloadImage();
+    pussyBullets.clear();
+    UnloadTexture(thunder_texture);
+    UnloadTexture(pussy_shit_texture);
+    UnloadSound(thunderSound);
 }
 
 void GameController::Update() 
@@ -80,6 +94,8 @@ void GameController::Update()
         background.SetCenter((float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f);
         background.CalculateBackgroundScale();
     }
+    //////////////////////////////////
+    Pickup::UpdateAll(GetFrameTime());//->Cập nhật tất cả pickups mỗi frame
 }
 
 void GameController::HandleCountdown() 
@@ -203,12 +219,27 @@ void GameController::HandleInput()
         }
     }
 }
-    
-void GameController::Draw() 
+
+void GameController::HandleObjectDrawing()
 {
     background.DrawRotatingBackground();
     
-    // recently added
+    for(auto pussy : pussies)
+        pussy.Draw();
+
+    double elapsedTime = GetTime() - timestart;
+    Color currentOverlayColor;
+    if(elapsedTime >= blinkduration)
+        isblinking = false;
+    else 
+    {
+        if (isblinking)
+            currentOverlayColor = ((int)(elapsedTime * blinkspeed) % 2 == 0) ? blink1 : blink2;
+    }
+
+    if(isblinking)
+        goto Skip_Ship_Bullets;
+
     if(IsKeyPressed(KEY_SPACE))
         ship.Shooting(bullets, &bullet_texture), PlaySound(ship_shootsound);
 
@@ -224,22 +255,32 @@ void GameController::Draw()
         bullets[i].Draw();
     }
 
-    for(auto pussy : pussies)
-        pussy.Draw();
-
     for (auto& bullet : bullets) 
     {
         if (!bullet.active) 
             continue;
-        for (auto& pussy : pussies) 
+        //////////////////////////////////////////////////
+        for (auto& pussy : pussies)
         {
-            if (CheckCollisionRecs(bullet.getRect(), pussy.getRect())) 
+            if (CheckCollisionRecs(bullet.getRect(), pussy.getRect()))
             {
                 bullet.active = false;
+
+                // 1) Tính vị trí spawn NGAY TẠI VỊ TRÍ hiện tại của pussy
+                Rectangle r = pussy.getRect();
+                Vector2 spawnPos = {
+                    r.x + r.width / 2,
+                    r.y + r.height / 2
+                };
+                Pickup::Spawn(spawnPos);
+
+                // 2) Đánh dấu pussy đã chết
                 pussy.position.x = -9999;
+
+                ship.AdjustStatus(SCORE_GAIN_1);
                 break;
             }
-        }
+        }////->update code here
     }
 
     for(int i=0; i<(int)pussies.size(); i++)
@@ -250,6 +291,8 @@ void GameController::Draw()
             i--;
         }
     }
+
+Skip_Ship_Bullets:
 
     bool reachEdge = false;
     for (auto& pussy : pussies) 
@@ -276,36 +319,72 @@ void GameController::Draw()
             shooter.getRect().x + shooter.getRect().width / 2,
             shooter.getRect().y + shooter.getRect().height
         };
-        Bullet pussyBullet(pos, &pussy_shit_texture);
-        pussyBullet.speed = -pussyBullet.speed;
-        pussyBullets.push_back(pussyBullet);
-        PlaySound(pussy_shootsound);
-    }
 
-    for(int i=0; i<(int)pussyBullets.size(); i++)
-    {
-        if(pussyBullets[i].active == false)
-        {
+        int randType = GetRandomValue(1, 3); // 1/3 chance to shoot thunder bolt
+        Bullet* newBullet;
+        if (randType == 1) {
+            newBullet = new ThunderBullet(pos, &thunder_texture);
+            PlaySound(thunderSound); 
+        } else {
+            newBullet = new Bullet(pos, &pussy_shit_texture);
+            newBullet->speed = -newBullet->speed;
+        }
+
+        pussyBullets.push_back(newBullet);
+        PlaySound(pussy_shootsound);
+    }   
+
+    for (int i = 0; i < (int)pussyBullets.size(); i++) {
+        if (!pussyBullets[i]->active) {
             pussyBullets.erase(pussyBullets.begin() + i);
             i--;
             continue;
         }
-        pussyBullets[i].Update();
-        pussyBullets[i].Draw();
+        pussyBullets[i]->Update();
+        pussyBullets[i]->Draw();
     }
 
-    ship.Moving();
-    //ship.StatusBar();
-    
-    if (gameState == GAME_GAME_OVER) {
-        DrawGameOver();    
+    if(!isblinking)
+    {
+        int flag = ship.HitBoxChecking(pussyBullets);  // Get hit and run out of lives
+        if(flag == 2)
+        {
+            gameState = GAME_GAME_OVER;
+            return;
+        }
+        else if(flag == 1)
+        {
+            // Make the spaceship blink for 3 seconds
+            timestart = GetTime();
+            isblinking = true;
+            ship.StatusBar();
+            return;
+        }
     }
+    
+    if(isblinking)
+        ship.MovingWhileBlinking(currentOverlayColor);    // temporary tint color
+    else
+        ship.Moving();
+    ship.EatPickup();  // <--dòng này để tàu kiểm tra và ăn pickup
+
+    ship.StatusBar();
+    return;
+}
+
+void GameController::Draw() 
+{
+    HandleObjectDrawing();
+
+    if (gameState == GAME_GAME_OVER)
+        DrawGameOver();    
     else if (gameState == GAME_COUNTDOWN)
         DrawCountdown();   
     else if (gameState == GAME_PAUSED)
         DrawPaused();   
-    else 
-        DrawUI();
+    //else DrawUI();
+
+    Pickup::DrawAll();//recently added
 }
 
 void GameController::DrawGameOver() 

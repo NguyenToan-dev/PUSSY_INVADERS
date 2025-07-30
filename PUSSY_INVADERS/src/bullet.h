@@ -7,9 +7,9 @@ public:
     float speed;
     bool active;
     Texture2D* texture;
-
+    int damage;  
     Bullet(Vector2 pos, Texture2D* tex);
-    void Update();
-    void Draw();
-    Rectangle getRect() const;  // 👈 Thêm dòng này
+    virtual void Update();
+    virtual void Draw();
+    virtual Rectangle getRect() const;
 };
