@@ -12,6 +12,7 @@ using namespace std;
 class SpaceShip
 {
 private:
+    static float ship_scale;
     int live_counter;
     int missile_counter;
     int weapon_level;
@@ -19,6 +20,10 @@ private:
     int overheat;
     ull score;
     static int heat_limit;
+    Vector2 recoil_offset;
+    float recoil_timer;
+    float recoil_duration;
+    float recoil_strength;
 
     int sushi_collected = 0;
     int milk_collected = 0;
@@ -35,6 +40,8 @@ private:
 public:
     SpaceShip();
     ~SpaceShip();
+    void SetShipScale(float scale);
+    float GetShipScale() const;
     void InsertSpaceShipTexture();
     void SetAttribute();
     Texture2D GetShip() const;
@@ -50,4 +57,7 @@ public:
     int HitBoxChecking(vector<Bullet*>&);
     void AdjustStatus(ShipStatus);
     void EatPickup(); // để ăn pickup
+
+    void UpdateRecoil();
+    void ApplyRecoil();
 };
