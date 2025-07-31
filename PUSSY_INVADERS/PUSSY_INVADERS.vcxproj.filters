@@ -51,6 +51,9 @@
     <ClInclude Include="src\Pickup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Meteor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Background.cpp">
@@ -87,6 +90,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Pickup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Meteor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

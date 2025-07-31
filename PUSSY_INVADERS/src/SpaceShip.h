@@ -25,7 +25,6 @@ private:
     int battery_collected = 0;
     bool isNewBullet = false;
 
-
     Brightness fireball_brightness;
     SpaceShipTexture image;
     Font font;
@@ -50,4 +49,7 @@ public:
     int HitBoxChecking(vector<Bullet*>&);
     void AdjustStatus(ShipStatus);
     void EatPickup(); // để ăn pickup
+    int GetLives() const {
+        return live_counter;
+    }
 };
