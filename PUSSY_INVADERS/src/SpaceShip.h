@@ -6,6 +6,7 @@
 #include "Brightness.h"
 #include "SpaceShipTexture.h"
 #include "Addition.h"
+#include "LaserBullet.h"
 #define ull unsigned long long
 using namespace std;
 
@@ -15,7 +16,7 @@ private:
     int live_counter;
     int missile_counter;
     int weapon_level;
-    int thigh_counter;
+    int thigh_counter;  // will remove it
     int overheat;
     ull score;
     static int heat_limit;
@@ -23,7 +24,6 @@ private:
     int sushi_collected = 0;
     int milk_collected = 0;
     int battery_collected = 0;
-    bool isNewBullet = false;
 
 
     Brightness fireball_brightness;
@@ -31,6 +31,9 @@ private:
     Font font;
 
     void UpdateStatus(ShipStatus);
+
+public: 
+    bool isNewBullet = false;
 
 public:
     SpaceShip();
@@ -50,4 +53,6 @@ public:
     int HitBoxChecking(vector<Bullet*>&);
     void AdjustStatus(ShipStatus);
     void EatPickup(); // để ăn pickup
+
+    void Shooting1(vector<LaserBullet>&, Texture2D*);
 };

@@ -40,6 +40,14 @@ GameController::GameController()
     blinkduration = 2.f;
     blink1 = { 0, 0, 0, 100 };   // Semi-transparent black (R, G, B, Alpha)
     blink2 = { 255, 255, 255, 100 }; // Semi-transparent white
+
+    laser_texture = (Texture*)malloc(4 * sizeof(Texture));
+    for(int i=1; i<=4; i++)
+    {
+        char filename[1024];
+        snprintf(filename, 1024, "image/lightning_%d.png", i);
+        laser_texture[i-1] = LoadTexture(filename);
+    }
 }
 
 GameController::~GameController()
@@ -56,6 +64,9 @@ GameController::~GameController()
     UnloadTexture(thunder_texture);
     UnloadTexture(pussy_shit_texture);
     UnloadSound(thunderSound);
+
+    for(int i=0; i<4; i++)
+        UnloadTexture(laser_texture[i]);
 }
 
 void GameController::Update() 
@@ -220,46 +231,28 @@ void GameController::HandleInput()
     }
 }
 
-void GameController::HandleObjectDrawing()
+void GameController::HandleLaserBulletShooting()
 {
-    background.DrawRotatingBackground();
-    
-    for(auto pussy : pussies)
-        pussy.Draw();
-
-    double elapsedTime = GetTime() - timestart;
-    Color currentOverlayColor;
-    if(elapsedTime >= blinkduration)
-        isblinking = false;
-    else 
-    {
-        if (isblinking)
-            currentOverlayColor = ((int)(elapsedTime * blinkspeed) % 2 == 0) ? blink1 : blink2;
-    }
-
-    if(isblinking)
-        goto Skip_Ship_Bullets;
-
     if(IsKeyPressed(KEY_SPACE))
-        ship.Shooting(bullets, &bullet_texture), PlaySound(ship_shootsound);
+        ship.Shooting1(laser_bullets, laser_texture), PlaySound(ship_shootsound);
 
-    for(int i=0; i<(int)bullets.size(); i++)
+    for(int i=0; i<(int)laser_bullets.size(); i++)
     {
-        if(bullets[i].active == false)
+        if(laser_bullets[i].active == false)
         {
-            bullets.erase(bullets.begin() + i);
+            laser_bullets.erase(laser_bullets.begin() + i);
             i--;
             continue;
         }
-        bullets[i].Update();
-        bullets[i].Draw();
+        laser_bullets[i].Update();
+        laser_bullets[i].Draw();
     }
 
-    for (auto& bullet : bullets) 
+    for (auto& bullet : laser_bullets) 
     {
         if (!bullet.active) 
             continue;
-        //////////////////////////////////////////////////
+        
         for (auto& pussy : pussies)
         {
             if (CheckCollisionRecs(bullet.getRect(), pussy.getRect()))
@@ -291,6 +284,87 @@ void GameController::HandleObjectDrawing()
             i--;
         }
     }
+}
+
+void GameController::HandleBulletShooting()
+{
+    if(IsKeyPressed(KEY_SPACE))
+        ship.Shooting(bullets, &bullet_texture), PlaySound(ship_shootsound);
+
+    for(int i=0; i<(int)bullets.size(); i++)
+    {
+        if(bullets[i].active == false)
+        {
+            bullets.erase(bullets.begin() + i);
+            i--;
+            continue;
+        }
+        bullets[i].Update();
+        bullets[i].Draw();
+    }
+
+    for (auto& bullet : bullets) 
+    {
+        if (!bullet.active) 
+            continue;
+        
+        for (auto& pussy : pussies)
+        {
+            if (CheckCollisionRecs(bullet.getRect(), pussy.getRect()))
+            {
+                bullet.active = false;
+
+                // 1) Tính vị trí spawn NGAY TẠI VỊ TRÍ hiện tại của pussy
+                Rectangle r = pussy.getRect();
+                Vector2 spawnPos = {
+                    r.x + r.width / 2,
+                    r.y + r.height / 2
+                };
+                Pickup::Spawn(spawnPos);
+
+                // 2) Đánh dấu pussy đã chết
+                pussy.position.x = -9999;
+
+                ship.AdjustStatus(SCORE_GAIN_1);
+                break;
+            }
+        }////->update code here
+    }
+
+    for(int i=0; i<(int)pussies.size(); i++)
+    {
+        if(pussies[i].position.x < 0)
+        {
+            pussies.erase(pussies.begin() + i);
+            i--;
+        }
+    }
+}
+
+void GameController::HandleObjectDrawing()
+{
+    background.DrawRotatingBackground();
+    
+    for(auto pussy : pussies)
+        pussy.Draw();
+
+    double elapsedTime = GetTime() - timestart;
+    Color currentOverlayColor;
+    if(elapsedTime >= blinkduration)
+        isblinking = false;
+    else 
+    {
+        if (isblinking)
+            currentOverlayColor = ((int)(elapsedTime * blinkspeed) % 2 == 0) ? blink1 : blink2;
+    }
+
+    if(isblinking)
+        goto Skip_Ship_Bullets;
+
+    if(ship.isNewBullet)
+        HandleLaserBulletShooting();
+    else
+        HandleBulletShooting();
 
 Skip_Ship_Bullets:
 
@@ -369,6 +443,10 @@ Skip_Ship_Bullets:
     ship.EatPickup();  // <--dòng này để tàu kiểm tra và ăn pickup
 
     ship.StatusBar();
+
+    if(ship.isNewBullet)
+
+
     return;
 }
 

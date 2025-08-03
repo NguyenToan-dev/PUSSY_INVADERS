@@ -215,6 +215,7 @@ void SpaceShip::UpdateStatus(ShipStatus flag)
     {
         // Nhặt gift – chuyển loại đạn
         // TODO: đặt cờ hoặc thay đổi texture
+        isNewBullet = true;
     }
     else if (flag == LEVEL_UP)
     {
@@ -283,6 +284,19 @@ void SpaceShip::Shooting(std::vector<Bullet>& bullets, Texture2D* bulletTexture)
     bullets.emplace_back(center, bulletTexture);
 }
 
+void SpaceShip::Shooting1(vector<LaserBullet>& bullets, Texture2D* texture)
+{
+    UpdateStatus(HEAT_INCREASE);
+    Vector2 mouse = GetMousePosition();
+    Vector2 pos = BoundChecking(mouse);
+
+    float scale = 0.2f;
+    Vector2 center;
+    center.x = pos.x + static_cast<float>(image.ship.texture.width) * scale / 2.0f;
+    center.y = pos.y + static_cast<float>(image.ship.texture.height) * scale / 2.0f;
+    bullets.emplace_back(center, texture);
+}
+
 // Lấy hình chữ nhật bao tàu – dùng để va chạm
 Rectangle SpaceShip::getRect()
 {
@@ -342,6 +356,11 @@ void SpaceShip::EatPickup()
             case PickupType::Gift1:
             case PickupType::Gift2:
             case PickupType::Gift3:
+                if(isNewBullet)
+                {
+                    isNewBullet = false;  
+                    break;
+                }       
                 AdjustStatus(NEW_BULLET); break;
             default:
                 break;

@@ -9,6 +9,7 @@
 #include<vector>
 #include "ThunderBullet.h"  
 #include "Pickup.h"//->recently added
+#include "LaserBullet.h"
 
 class GameController
 {
@@ -32,6 +33,9 @@ private:
     //std::vector<Bullet*> thunderBullets;
     Sound thunderSound;
 
+    std::vector<LaserBullet> laser_bullets;
+    Texture2D *laser_texture;
+
     double timestart;
     float blinkspeed;
     float blinkduration;
@@ -53,5 +57,7 @@ public:
     void Update();
     void Draw();
     void HandleObjectDrawing();
+    void HandleBulletShooting();
+    void HandleLaserBulletShooting();
 
 };
