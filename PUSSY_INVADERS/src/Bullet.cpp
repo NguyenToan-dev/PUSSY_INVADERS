@@ -3,7 +3,7 @@
 
 Bullet::Bullet(Vector2 pos, Texture2D* tex) {
     position = pos;
-    speed = 500.0f;
+    speed = 1200.0f;
     active = true;
     texture = tex;
     damage = 1;

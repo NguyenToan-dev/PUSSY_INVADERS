@@ -7,7 +7,7 @@ int main()
     const int height = 1080;
 
     InitWindow(width, height, "PUSSY INVADERs");
-    SetTargetFPS(30);
+    SetTargetFPS(144);
     InitAudioDevice();
 
     GameController controller;

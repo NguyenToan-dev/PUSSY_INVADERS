@@ -5,9 +5,9 @@
 Background::Background()
 {
     backgroundRotation = .0;
-    rotationSpeed = .4;
+    rotationSpeed = .8;
     backgroundScale = 1.0f;
-    backgroundTexture = LoadTexture("image/Background-1.jpg");
+    backgroundTexture = LoadTexture("image/Background-1.png");
     CalculateBackgroundScale();
     backgroundCenter = { GetScreenWidth() / 2.0f, GetScreenHeight() / 2.0f };
 

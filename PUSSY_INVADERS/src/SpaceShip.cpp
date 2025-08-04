@@ -164,149 +164,154 @@ void SpaceShip::StatusBar()
     // Hiển thị thông tin
     DrawTextEx(font, TextFormat("SCORE: %llu", score), { 0.0f, 0.0f }, 40.0f, 0.0f, GREEN);
     DrawTextEx(font, TextFormat("HEAT: %d/%d", overheat, heat_limit), { 0.0f, 40.0f }, 40.0f, 0.0f, GREEN);
-    DrawTextureEx(image.bar.texture, image.bar.pos, 0.0f, 1.2f, WHITE);
 
-    // Hiển thị số lượng vật phẩm
-    Vector2 pos;
+    // Move the status bar image slightly upward
+    Vector2 adjustedBarPos = image.bar.pos;
+    adjustedBarPos.y -= 20.0f;
+    DrawTextureEx(image.bar.texture, adjustedBarPos, 0.0f, 1.0f, WHITE);
 
-    DrawTextureEx(image.live.texture, image.live.pos, 0.0f, 0.02f, WHITE);
-    pos.x = image.live.pos.x + static_cast<float>(image.live.texture.width) * 0.02f;
-    pos.y = static_cast<float>(GetScreenHeight() - 50);
+    // Initialize position vector for item counts
+    Vector2 pos = { 0.0f, static_cast<float>(GetScreenHeight() - 50) };
+
+    // Draw item counts with proper positioning
+    pos.x = image.live.pos.x + 50;
+	pos.y = image.live.pos.y - 5; // Adjust Y position for better alignment
     DrawTextEx(font, TextFormat("\t%d\t", live_counter), pos, 40.0f, 0.0f, GREEN);
 
-    DrawTextureEx(image.missile.texture, image.missile.pos, 0.0f, 0.1f, WHITE);
-    pos.x = image.missile.pos.x + static_cast<float>(image.missile.texture.width) * 0.1f;
+    pos.x = image.missile.pos.x + 0;
+    pos.y = image.missile.pos.y + 5; // Adjust Y position for better alignment
     DrawTextEx(font, TextFormat("\t%d\t", missile_counter), pos, 40.0f, 0.0f, GREEN);
 
-    DrawTextureEx(image.thigh.texture, image.thigh.pos, 0.0f, 0.07f, WHITE);
-    pos.x = image.thigh.pos.x + static_cast<float>(image.thigh.texture.width) * 0.07f;
+    pos.x = image.thigh.pos.x + 0;
+    pos.y = image.thigh.pos.y + 5; // Adjust Y position for better alignment
     DrawTextEx(font, TextFormat("\t%d\t", thigh_counter), pos, 40.0f, 0.0f, GREEN);
 
-    DrawTextureEx(image.level.texture, image.level.pos, 0.0f, 0.065f, WHITE);
-    pos.x = image.level.pos.x + static_cast<float>(image.level.texture.width) * 0.065f;
+    pos.x = image.level.pos.x + 0;
+    pos.y = image.level.pos.y + 5; // Adjust Y position for better alignment
     DrawTextEx(font, TextFormat("\t%d\t", weapon_level), pos, 40.0f, 0.0f, GREEN);
 }
 
-// Cập nhật trạng thái tàu
-void SpaceShip::UpdateStatus(ShipStatus flag)
-{
-    if (flag == HEAT_DECREASE)
+
+    // Cập nhật trạng thái tàu
+    void SpaceShip::UpdateStatus(ShipStatus flag)
     {
-        // Giảm nhiệt
-        overheat -= 5;
-        if (overheat <= 0)
-            overheat = 0;
-    }
-    else if (flag == HEAT_INCREASE)
-    {
-        // Tăng nhiệt
-        if (overheat >= heat_limit)
+        if (flag == HEAT_DECREASE)
         {
-            overheat = heat_limit;
-            return;
+            // Giảm nhiệt
+            overheat -= 5;
+            if (overheat <= 0)
+                overheat = 0;
         }
-        overheat += 40;
-    }
-    else if (flag >= SCORE_GAIN_1 && flag <= SCORE_GAIN_3)
-    {
-        // Tăng điểm theo loại kẻ địch
-        if (flag == SCORE_GAIN_1)
-            score += 50;
-        else if (flag == SCORE_GAIN_2)
-            score += 100;
-        else if (flag == SCORE_GAIN_3)
-            score += 150;
-    }
-    else if (flag == LIVE_DECREASE)
-    {
-        // Mất mạng
-        live_counter--;
-        if (live_counter <= 0)
-            live_counter = 0;
-    }
-    else if (flag == LEVEL_UP)
-    {
-        // Tăng cấp vũ khí tối đa 5
-        if (weapon_level >= 5)
-            weapon_level = 5;
-        else
-            weapon_level++;
-    }
-    else if (flag == MISSILE_ADD)
-    {
-        // Thêm tên lửa, tối đa 10
-        if (missile_counter >= 10)
-            missile_counter = 10;
-        else
-            missile_counter++;
-    }
-    else if (flag == SUSHI_ADD)
-    {
-        // Nhặt sushi
-        sushi_collected++;
-
-        // Kiểm tra nếu đủ để đổi tên lửa
-        int totalSushiValue = sushi_collected + milk_collected * 5;
-        while (totalSushiValue >= 10) {
-            missile_counter++;
-            if (missile_counter > 10) missile_counter = 10;
-
-            // Trừ sushi/milk sau khi đổi
-            if (sushi_collected >= 10) {
-                sushi_collected -= 10;
+        else if (flag == HEAT_INCREASE)
+        {
+            // Tăng nhiệt
+            if (overheat >= heat_limit)
+            {
+                overheat = heat_limit;
+                return;
             }
-            else {
-                int remaining = 10 - sushi_collected;
-                sushi_collected = 0;
-                int milkToUse = (remaining + 4) / 5;
-                milk_collected -= milkToUse;
-                if (milk_collected < 0) milk_collected = 0;
-            }
-
-            totalSushiValue = sushi_collected + milk_collected * 5;
+            overheat += 40;
         }
-    }
-    else if (flag == MILK_ADD)
-    {
-        // Tương tự sushi – cộng milk và đổi tên lửa
-        milk_collected++;
-
-        int totalSushiValue = sushi_collected + milk_collected * 5;
-        while (totalSushiValue >= 10) {
-            missile_counter++;
-            if (missile_counter > 10) missile_counter = 10;
-
-            if (sushi_collected >= 10) {
-                sushi_collected -= 10;
-            }
-            else {
-                int remaining = 10 - sushi_collected;
-                sushi_collected = 0;
-                int milkToUse = (remaining + 4) / 5;
-                milk_collected -= milkToUse;
-                if (milk_collected < 0) milk_collected = 0;
-            }
-
-            totalSushiValue = sushi_collected + milk_collected * 5;
+        else if (flag >= SCORE_GAIN_1 && flag <= SCORE_GAIN_3)
+        {
+            // Tăng điểm theo loại kẻ địch
+            if (flag == SCORE_GAIN_1)
+                score += 50;
+            else if (flag == SCORE_GAIN_2)
+                score += 100;
+            else if (flag == SCORE_GAIN_3)
+                score += 150;
         }
-    }
-    else if (flag == NEW_BULLET)
-    {
-        // Nhặt gift – chuyển loại đạn
-        // TODO: đặt cờ hoặc thay đổi texture
-    }
-    else if (flag == LEVEL_UP)
-    {
-        // Tăng cấp từ battery
-        battery_collected++;
-        if (weapon_level >= 5)
-            weapon_level = 5;
-        else
-            weapon_level++;
-    }
+        else if (flag == LIVE_DECREASE)
+        {
+            // Mất mạng
+            live_counter--;
+            if (live_counter <= 0)
+                live_counter = 0;
+        }
+        else if (flag == LEVEL_UP)
+        {
+            // Tăng cấp vũ khí tối đa 5
+            if (weapon_level >= 5)
+                weapon_level = 5;
+            else
+                weapon_level++;
+        }
+        else if (flag == MISSILE_ADD)
+        {
+            // Thêm tên lửa, tối đa 10
+            if (missile_counter >= 10)
+                missile_counter = 10;
+            else
+                missile_counter++;
+        }
+        else if (flag == SUSHI_ADD)
+        {
+            // Nhặt sushi
+            sushi_collected++;
 
-    return;
-}
+            // Kiểm tra nếu đủ để đổi tên lửa
+            int totalSushiValue = sushi_collected + milk_collected * 5;
+            while (totalSushiValue >= 10) {
+                missile_counter++;
+                if (missile_counter > 10) missile_counter = 10;
+
+                // Trừ sushi/milk sau khi đổi
+                if (sushi_collected >= 10) {
+                    sushi_collected -= 10;
+                }
+                else {
+                    int remaining = 10 - sushi_collected;
+                    sushi_collected = 0;
+                    int milkToUse = (remaining + 4) / 5;
+                    milk_collected -= milkToUse;
+                    if (milk_collected < 0) milk_collected = 0;
+                }
+
+                totalSushiValue = sushi_collected + milk_collected * 5;
+            }
+        }
+        else if (flag == MILK_ADD)
+        {
+            // Tương tự sushi – cộng milk và đổi tên lửa
+            milk_collected++;
+
+            int totalSushiValue = sushi_collected + milk_collected * 5;
+            while (totalSushiValue >= 10) {
+                missile_counter++;
+                if (missile_counter > 10) missile_counter = 10;
+
+                if (sushi_collected >= 10) {
+                    sushi_collected -= 10;
+                }
+                else {
+                    int remaining = 10 - sushi_collected;
+                    sushi_collected = 0;
+                    int milkToUse = (remaining + 4) / 5;
+                    milk_collected -= milkToUse;
+                    if (milk_collected < 0) milk_collected = 0;
+                }
+
+                totalSushiValue = sushi_collected + milk_collected * 5;
+            }
+        }
+        else if (flag == NEW_BULLET)
+        {
+            // Nhặt gift – chuyển loại đạn
+            // TODO: đặt cờ hoặc thay đổi texture
+        }
+        else if (flag == LEVEL_UP)
+        {
+            // Tăng cấp từ battery
+            battery_collected++;
+            if (weapon_level >= 5)
+                weapon_level = 5;
+            else
+                weapon_level++;
+        }
+
+        return;
+    }
 
 // Wrapper cho UpdateStatus
 void SpaceShip::AdjustStatus(ShipStatus flag)
