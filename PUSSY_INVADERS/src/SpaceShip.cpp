@@ -5,7 +5,7 @@
 #include <random>
 
 // Thiết lập giới hạn nhiệt độ
-int SpaceShip::heat_limit = 2000;
+int SpaceShip::heat_limit = 500;
 
 // NOTE: Spaceship scale factor - adjust this to make ship bigger/smaller
 // 0.2f = normal size, 0.15f = smaller, 0.25f = larger
@@ -394,8 +394,10 @@ int SpaceShip::HitBoxChecking(vector<Bullet*>& bullets)
     {
         if (CheckCollisionRecs(bullet->getRect(), getRect()))
         {
-            bullet->active = false;
-            bullet->position.x = -9999;
+            bullet->SetActive(false);
+            Vector2 pos = bullet->GetPosition();
+            pos.x = -9999;
+            bullet->SetPosition(pos);
             UpdateStatus(LIVE_DECREASE);
             if (live_counter == 0)
                 return 2; // tàu nổ

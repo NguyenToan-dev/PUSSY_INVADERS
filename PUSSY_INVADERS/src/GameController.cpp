@@ -40,6 +40,11 @@ GameController::GameController()
     blinkduration = 2.f;
     blink1 = { 0, 0, 0, 100 };   // Semi-transparent black (R, G, B, Alpha)
     blink2 = { 255, 255, 255, 100 }; // Semi-transparent white
+
+    //hiện wave
+    gameState = GAME_WAVE_INTRO;
+    waveIntroTimer = 0.0f;  // Thêm biến đếm thời gian hiển thị wave
+    currentWave = 1;        // Để sau này còn tăng lên Wave 2, 3...
 }
 
 GameController::~GameController()
@@ -56,15 +61,50 @@ GameController::~GameController()
     UnloadTexture(thunder_texture);
     UnloadTexture(pussy_shit_texture);
     UnloadSound(thunderSound);
+
+    MeteorManager::Unload();
 }
 
 void GameController::Update() 
 {
+    //------------hiện wave--------------
+    if (gameState == GAME_WAVE_INTRO) {
+        float frameTime = std::min(GetFrameTime(), 0.1f); // Clamp to 0.1s max
+        waveIntroTimer += frameTime;
+        background.SetRotation(0.5f);
+        if (waveIntroTimer >= 2.0f) {
+            gameState = GAME_COUNTDOWN;
+            countdownTimer = 0.0f;
+        }
+        return;
+    }
+    //------------------------------------
     if (gameState == GAME_PLAYING_STATE) 
     {
         background.SetRotation(background.GetRotation() + background.GetSpeed() * GetFrameTime());
         music.HandleMusic(gameState);
         HandleInput();
+        if (currentWave == 2)
+        {
+            MeteorManager::UpdateAll(GetFrameTime());
+            Rectangle shipRect = ship.getRect();
+            // chỉ check nếu chưa đang nhấp nháy
+            if (!isblinking && MeteorManager::CheckCollisionWithShip(shipRect))
+            {
+                // Trúng meteor → trừ 1 mạng
+                ship.AdjustStatus(LIVE_DECREASE);
+
+                // Bắt đầu nhấp nháy (giống trúng đạn)
+                timestart = GetTime();
+                isblinking = true;
+                ship.StatusBar();    // cập nhật thanh ngay lập tức
+
+                // Nếu hết mạng thì Game Over
+                if (ship.GetLives() == 0)
+                    gameState = GAME_GAME_OVER;
+            }
+        }
+
     }
     else if (gameState == GAME_GAME_OVER) 
     {
@@ -94,8 +134,16 @@ void GameController::Update()
         background.SetCenter((float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f);
         background.CalculateBackgroundScale();
     }
-    //////////////////////////////////
+    
     Pickup::UpdateAll(GetFrameTime());//->Cập nhật tất cả pickups mỗi frame
+
+    // Chỉ update meteor khi đã ở wave 2 trở lên và đang chơi
+    if (currentWave == 2 && gameState == GAME_PLAYING_STATE) {
+        MeteorManager::UpdateAll(GetFrameTime());
+        MeteorManager::CheckCollisionWithBullets(bullets); 
+        Rectangle shipRect = ship.getRect();
+    }
+
 }
 
 void GameController::HandleCountdown() 
@@ -223,29 +271,29 @@ void GameController::HandleInput()
 void GameController::HandleObjectDrawing()
 {
     background.DrawRotatingBackground();
-    
-    for(auto pussy : pussies)
+
+    for (auto pussy : pussies)
         pussy.Draw();
 
     double elapsedTime = GetTime() - timestart;
     Color currentOverlayColor;
-    if(elapsedTime >= blinkduration)
+    if (elapsedTime >= blinkduration)
         isblinking = false;
-    else 
+    else
     {
         if (isblinking)
             currentOverlayColor = ((int)(elapsedTime * blinkspeed) % 2 == 0) ? blink1 : blink2;
     }
 
-    if(isblinking)
+    if (isblinking)
         goto Skip_Ship_Bullets;
 
-    if(IsKeyPressed(KEY_SPACE))
+    if (IsKeyPressed(KEY_SPACE))
         ship.Shooting(bullets, &bullet_texture), PlaySound(ship_shootsound);
 
-    for(int i=0; i<(int)bullets.size(); i++)
+    for (int i = 0; i < (int)bullets.size(); i++)
     {
-        if(bullets[i].active == false)
+        if (bullets[i].IsActive() == false)
         {
             bullets.erase(bullets.begin() + i);
             i--;
@@ -255,16 +303,16 @@ void GameController::HandleObjectDrawing()
         bullets[i].Draw();
     }
 
-    for (auto& bullet : bullets) 
+    for (auto& bullet : bullets)
     {
-        if (!bullet.active) 
+        if (!bullet.IsActive())
             continue;
         //////////////////////////////////////////////////
         for (auto& pussy : pussies)
         {
             if (CheckCollisionRecs(bullet.getRect(), pussy.getRect()))
             {
-                bullet.active = false;
+                bullet.SetActive(false);
 
                 // 1) Tính vị trí spawn NGAY TẠI VỊ TRÍ hiện tại của pussy
                 Rectangle r = pussy.getRect();
@@ -280,12 +328,12 @@ void GameController::HandleObjectDrawing()
                 ship.AdjustStatus(SCORE_GAIN_1);
                 break;
             }
-        }////->update code here
+        }
     }
 
-    for(int i=0; i<(int)pussies.size(); i++)
+    for (int i = 0; i < (int)pussies.size(); i++)
     {
-        if(pussies[i].position.x < 0)
+        if (pussies[i].position.x < 0)
         {
             pussies.erase(pussies.begin() + i);
             i--;
@@ -295,22 +343,22 @@ void GameController::HandleObjectDrawing()
 Skip_Ship_Bullets:
 
     bool reachEdge = false;
-    for (auto& pussy : pussies) 
+    for (auto& pussy : pussies)
     {
         pussy.Update(Pussy::pussyDirection);
         Rectangle r = pussy.getRect();
-        if (r.x < 0 || r.x + r.width > GetScreenWidth()) 
+        if (r.x < 0 || r.x + r.width > GetScreenWidth())
             reachEdge = true;
     }
-    if (reachEdge) 
+    if (reachEdge)
     {
         Pussy::pussyDirection = -(Pussy::pussyDirection);
-        for (auto& pussy : pussies) 
+        for (auto& pussy : pussies)
             pussy.position.y += 20;
     }
 
     Pussy::pussyShootTimer += GetFrameTime();
-    if (Pussy::pussyShootTimer >= Pussy::pussyShootInterval && !pussies.empty()) 
+    if (Pussy::pussyShootTimer >= Pussy::pussyShootInterval && !pussies.empty())
     {
         Pussy::pussyShootTimer = 0.0f;
         int idx = GetRandomValue(0, pussies.size() - 1);
@@ -324,18 +372,19 @@ Skip_Ship_Bullets:
         Bullet* newBullet;
         if (randType == 1) {
             newBullet = new ThunderBullet(pos, &thunder_texture);
-            PlaySound(thunderSound); 
-        } else {
+            PlaySound(thunderSound);
+        }
+        else {
             newBullet = new Bullet(pos, &pussy_shit_texture);
-            newBullet->speed = -newBullet->speed;
+            newBullet->SetSpeed(-newBullet->GetSpeed());
         }
 
         pussyBullets.push_back(newBullet);
         PlaySound(pussy_shootsound);
-    }   
+    }
 
     for (int i = 0; i < (int)pussyBullets.size(); i++) {
-        if (!pussyBullets[i]->active) {
+        if (!pussyBullets[i]->IsActive()) {
             pussyBullets.erase(pussyBullets.begin() + i);
             i--;
             continue;
@@ -344,15 +393,15 @@ Skip_Ship_Bullets:
         pussyBullets[i]->Draw();
     }
 
-    if(!isblinking)
+    if (!isblinking)
     {
         int flag = ship.HitBoxChecking(pussyBullets);  // Get hit and run out of lives
-        if(flag == 2)
+        if (flag == 2)
         {
             gameState = GAME_GAME_OVER;
             return;
         }
-        else if(flag == 1)
+        else if (flag == 1)
         {
             // Make the spaceship blink for 3 seconds
             timestart = GetTime();
@@ -361,31 +410,88 @@ Skip_Ship_Bullets:
             return;
         }
     }
-    
-    if(isblinking)
+
+    if (isblinking)
         ship.MovingWhileBlinking(currentOverlayColor);    // temporary tint color
     else
         ship.Moving();
     ship.EatPickup();  // <--dòng này để tàu kiểm tra và ăn pickup
 
     ship.StatusBar();
+    //-----kết thúc và chuyển sang wave tiếp theo 
+    if (currentWave == 1 && pussies.empty() && gameState == GAME_PLAYING_STATE)
+    {
+        if (waveTransitionTimer < 0.0f) {
+            waveTransitionTimer = GetTime();  // bắt đầu đếm từ lúc giết con cuối
+        }
+        else if (GetTime() - waveTransitionTimer >= 2.0f) {
+            currentWave = 2;
+            gameState = GAME_WAVE_INTRO;
+            waveIntroTimer = 0.0f;
+            waveTransitionTimer = -1.0f;  // reset lại
+        }
+    }
+    else if (currentWave == 1 && !pussies.empty())
+    {
+        waveTransitionTimer = -1.0f; // nếu có pussy thì hủy đếm
+    }
+
+
     return;
 }
 
 void GameController::Draw() 
 {
-    HandleObjectDrawing();
+    if (gameState == GAME_WAVE_INTRO) {
+        DrawWaveIntro();
+        return;    // dừng luôn, không vẽ gì khác
+    }
 
+    HandleObjectDrawing();
     if (gameState == GAME_GAME_OVER)
         DrawGameOver();    
     else if (gameState == GAME_COUNTDOWN)
-        DrawCountdown();   
+    {
+        DrawWaveIntro();
+        DrawCountdown();
+    }
     else if (gameState == GAME_PAUSED)
         DrawPaused();   
     //else DrawUI();
 
     Pickup::DrawAll();//recently added
+    // Chỉ vẽ meteor khi đã vào wave 2+
+    if (currentWave > 1) {
+        MeteorManager::DrawAll();
+    }
 }
+
+void GameController::DrawWaveIntro()
+{
+    background.DrawRotatingBackground();
+
+    const char* waveText = TextFormat("WAVE %d", currentWave);
+    int fontSize = 100;
+    int textWidth = MeasureText(waveText, fontSize);
+    int x = (GetScreenWidth() - textWidth) / 2;
+    int y = GetScreenHeight() / 2 - fontSize / 2;
+
+    // Vẽ hiệu ứng glow bằng cách vẽ chữ màu xanh nhạt ở xung quanh
+    Color glowColor = { 100, 200, 255, 150 };  // xanh nhạt, mờ
+
+    for (int dx = -3; dx <= 3; dx++) {
+        for (int dy = -3; dy <= 3; dy++) {
+            if (dx != 0 || dy != 0) {
+                DrawText(waveText, x + dx, y + dy, fontSize, glowColor);
+            }
+        }
+    }
+
+    // Vẽ chữ chính màu trắng
+    DrawText(waveText, x, y, fontSize, WHITE);
+}
+
+
 
 void GameController::DrawGameOver() 
 {

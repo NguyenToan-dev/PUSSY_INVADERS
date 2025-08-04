@@ -30,7 +30,6 @@ private:
     int battery_collected = 0;
     bool isNewBullet = false;
 
-
     Brightness fireball_brightness;
     SpaceShipTexture image;
     Font font;
@@ -60,4 +59,7 @@ public:
 
     void UpdateRecoil();
     void ApplyRecoil();
+    int GetLives() const {
+        return live_counter;
+    }
 };
