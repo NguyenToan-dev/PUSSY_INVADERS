@@ -25,6 +25,7 @@
     <ClInclude Include="src\bullet.h" />
     <ClInclude Include="src\GameController.h" />
     <ClInclude Include="src\GameOver.h" />
+    <ClInclude Include="src\Intro.h" />
     <ClInclude Include="src\Meteor.h" />
     <ClInclude Include="src\MusicController.h" />
     <ClInclude Include="src\Pickup.h" />
@@ -39,6 +40,7 @@
     <ClCompile Include="src\bullet.cpp" />
     <ClCompile Include="src\GameController.cpp" />
     <ClCompile Include="src\GameOver.cpp" />
+    <ClCompile Include="src\Intro.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Meteor.cpp" />
     <ClCompile Include="src\MusicController.cpp" />
