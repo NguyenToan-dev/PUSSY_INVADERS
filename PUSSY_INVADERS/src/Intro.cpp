@@ -29,8 +29,18 @@ void Intro::LoadScenes() {
         { "image/intro5.jpg", "\"It's time... to destroy humanity!\"\n\"Meowwwwwwwwwwwwwwwwwwwww!\"" }
     };
 
-    for (auto& scene : scenes) {
-        images.push_back(LoadTexture(scene.imagePath.c_str()));
+    for (size_t i = 0; i < scenes.size(); ++i) {
+        if (i == 2) {
+            // Resize riêng ảnh thứ 3 (index = 2)
+            Image img = LoadImage(scenes[i].imagePath.c_str());
+            ImageResize(&img, 1280, 1000);
+            images.push_back(LoadTextureFromImage(img));
+            UnloadImage(img);
+        }
+        else {
+            // Các ảnh khác giữ nguyên
+            images.push_back(LoadTexture(scenes[i].imagePath.c_str()));
+        }
     }
 }
 
