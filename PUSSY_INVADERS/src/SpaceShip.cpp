@@ -27,6 +27,11 @@ SpaceShip::SpaceShip()
     recoil_duration = 0.2f; // Recoil lasts for 0.1 seconds
     recoil_strength = 20.0f; // How far back the ship moves
 
+	// Tilting logic variables
+    previous_mouse_pos = { 0.0f, 0.0f };
+    horizontal_velocity = 0.0f;
+    smooth_velocity = 0.0f;
+
     InsertSpaceShipTexture(); // Load hình ảnh tàu
     font = LoadFont("font/ChonkyBitsFontBold.otf"); // Load font chữ
 }
@@ -127,14 +132,15 @@ void SpaceShip::Moving()
     pos.x += recoil_offset.x;
     pos.y += recoil_offset.y;
 
-    // Draw ship and fireball
-    DrawTextureEx(image.ship.texture, pos, 0.0f, ship_scale, WHITE);
+    // Draw tilted ship and fireball
+    DrawTiltedShip(image.ship.texture, pos, ship_scale, WHITE);
     Vector2 pos1 = RocketPosition(pos);
     Color tint = fireball_brightness.TintColor();
-    DrawTextureEx(image.fireball.texture, pos1, 0.0f, ship_scale, tint);
+    DrawTiltedShip(image.fireball.texture, pos1, ship_scale, tint);
 
     return;
 }
+
 
 // Hiển thị tàu khi bị trúng đạn (nhấp nháy)
 void SpaceShip::MovingWhileBlinking(Color shiptint)
@@ -148,10 +154,10 @@ void SpaceShip::MovingWhileBlinking(Color shiptint)
     pos.x += recoil_offset.x;
     pos.y += recoil_offset.y;
 
-    // Draw ship and fireball
-    DrawTextureEx(image.ship.texture, pos, 0.0f, ship_scale, shiptint);
+    // Draw tilted ship and fireball with tint
+    DrawTiltedShip(image.ship.texture, pos, ship_scale, shiptint);
     Vector2 pos1 = RocketPosition(pos);
-    DrawTextureEx(image.fireball.texture, pos1, 0.0f, ship_scale, shiptint);
+    DrawTiltedShip(image.fireball.texture, pos1, ship_scale, shiptint);
 
     return;
 }
@@ -184,7 +190,7 @@ void SpaceShip::StatusBar()
 
     pos.x = image.thigh.pos.x + 0;
     pos.y = image.thigh.pos.y + 5; // Adjust Y position for better alignment
-    DrawTextEx(font, TextFormat("\t%d\t", thigh_counter), pos, 40.0f, 0.0f, GREEN);
+    DrawTextEx(font, TextFormat("\t%d\t", sushi_collected), pos, 40.0f, 0.0f, GREEN);
 
     pos.x = image.level.pos.x + 0;
     pos.y = image.level.pos.y + 5; // Adjust Y position for better alignment
@@ -451,4 +457,52 @@ void SpaceShip::EatPickup()
             --i;
         }
     }
+}
+
+// Add this function to your SpaceShip class or as a utility function
+float Lerp(float a, float b, float t) {
+    return a + (b - a) * t;
+}
+// Tilting logic for smooth movement
+void SpaceShip::DrawTiltedShip(Texture2D texture, Vector2 position, float scale, Color tint)
+{
+    // Calculate current horizontal velocity
+    Vector2 current_mouse = GetMousePosition();
+    horizontal_velocity = (current_mouse.x - previous_mouse_pos.x) / GetFrameTime();
+    previous_mouse_pos = current_mouse;
+
+    // Smooth the velocity for better visual effect
+    smooth_velocity = Lerp(smooth_velocity, horizontal_velocity, 8.0f * GetFrameTime());
+
+    // Create tilt effect using skew/shear
+
+    float tilt_factor = smooth_velocity * 0.0007f; // Adjust this for more/less tilt
+
+    tilt_factor = fmax(-0.3f, fmin(0.3f, tilt_factor)); // Limit tilt amount
+
+    // Calculate skewed positions for a parallelogram effect
+    float width = texture.width * scale;
+    float height = texture.height * scale;
+
+    // Skew the ship by offsetting top and bottom differently
+    Vector2 topLeft = { position.x - tilt_factor * height * 0.5f, position.y };
+    Vector2 topRight = { position.x + width - tilt_factor * height * 0.5f, position.y };
+    Vector2 bottomLeft = { position.x + tilt_factor * height * 0.5f, position.y + height };
+    Vector2 bottomRight = { position.x + width + tilt_factor * height * 0.5f, position.y + height };
+
+    // Since Raylib doesn't have built-in quad rendering, we'll use rotation instead
+    // but with a slight scale distortion for the skew effect
+    Rectangle source = { 0, 0, (float)texture.width, (float)texture.height };
+    Rectangle dest = {
+        position.x + width / 2,
+        position.y + height / 2,
+        width * (1.0f + abs(tilt_factor) * 0.1f), // Slight horizontal stretch
+        height
+    };
+    Vector2 origin = { width / 2, height / 2 };
+
+    // Convert tilt to rotation angle (degrees)
+    float rotation_angle = tilt_factor * 30.0f; // Convert to degrees, max ±9 degrees
+
+    DrawTexturePro(texture, source, dest, origin, rotation_angle, tint);
 }

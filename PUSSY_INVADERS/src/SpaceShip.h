@@ -36,6 +36,10 @@ private:
 
     void UpdateStatus(ShipStatus);
 
+    Vector2 previous_mouse_pos;
+    float horizontal_velocity;
+    float smooth_velocity;
+
 public:
     SpaceShip();
     ~SpaceShip();
@@ -62,4 +66,7 @@ public:
     int GetLives() const {
         return live_counter;
     }
+
+    void DrawTiltedShip(Texture2D texture, Vector2 position, float scale, Color tint);
+
 };
