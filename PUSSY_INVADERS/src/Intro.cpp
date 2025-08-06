@@ -1,32 +1,40 @@
 ﻿#include "Intro.h"
+#include "IntroTypingAudio.h"
 
-Intro::Intro() {
+Intro::Intro()
+{
     LoadScenes();
+    if (!IsAudioDeviceReady()) {
+        TraceLog(LOG_ERROR, "Audio device failed to initialize!");
+    }
     music = LoadMusicStream("sound/Once Upon a Time.mp3");
+    typingSound = generateSimpleSound(44100, 4410); // sampleRate = 44100, duration = 4410 samples (~0.1s)
+    SetSoundVolume(typingSound, 0.2f);  // Âm lượng từ 0.0 (im lặng) đến 1.0 (tối đa)
     PlayMusicStream(music);
 
     meowSound = LoadSound("sound/meow.mp3");
 
-
-    font = LoadFontEx("font/PixelOperatorSC.ttf", 32, 0, 0);
+    font = LoadFontEx("font/PixelOperatorMonoHB8.ttf", 32, 0, 0);
     allowSkipButton = true;
-    sceneDuration = 20.0f; 
+    sceneDuration = 20.0f;
+    displayedChars = 0; // Initialize displayed characters
 }
 
 Intro::~Intro() {
     for (auto& img : images) UnloadTexture(img);
     UnloadMusicStream(music);
     UnloadSound(meowSound);
+    UnloadSound(typingSound);
     UnloadFont(font);
 }
 
 void Intro::LoadScenes() {
     scenes = {
         { "image/intro1.jpeg", "In 2077, humanity thought their greatest enemy was artificial intelligence.\nBut they were wrong..." },
-        { "image/intro2.jpg", "From a strange dimension, \n the Cosmic Black Cat Army pierced through space-time, \n flooding the Milky Way to... TAKE REVENGE!" },
+        { "image/intro2.jpg", "From a strange dimension, \n the Cosmic Black Cat Army pierced through space-time, \n flooding the Milky Way to... TAKE REVENGE!!!!" },
         { "image/intro3.jpg", "The reason? Because humans once... raised them, \n abandoned them, and... neutered them." },
-        { "image/intro4.jpg", "You – an anonymous pilot – receive a top-secret mission: \n Fly the combat spaceship, \n repel the 'Pussy Invaders' before Earth becomes... \n A GIANT LITTER BOX!" },
-        { "image/intro5.jpg", "\"It's time... to destroy humanity!\"\n\"Meowwwwwwwwwwwwwwwwwwwww!\"" }
+        { "image/intro4.jpg", "You – an anonymous pilot – receive a top-secret mission: \n Fly the combat spaceship, \n repel the 'Pussy Invaders' before Earth becomes... \n A GIANT LITTER BOX!!!!" },
+        { "image/intro5.jpg", "\"It's time... to destroy humanity!!!!\"\n\"Meowwwwwwwwwwwwwwww!\"" }
     };
 
     for (size_t i = 0; i < scenes.size(); ++i) {
@@ -43,33 +51,43 @@ void Intro::LoadScenes() {
         }
     }
 }
-
 void Intro::Update() {
     if (finished) return;
 
     UpdateMusicStream(music);
     sceneTimer += GetFrameTime();
+
     if (IsKeyPressed(KEY_F)) {
         ToggleFullscreen();
     }
 
-    // Synchronize meow sound with "Meowwwwwwwwwwwwwwwwwwwww!" text
-    if (currentScene == scenes.size() - 1) {
-        const std::string& lastText = scenes.back().text;
-        size_t meowPos = lastText.find("Meowwwwwwwwwwwwwwwwwwwww!");
-        float typingSpeed = 0.1f; // Tăng tốc độ đánh máy 
-        int charsToShow = (int)(sceneTimer / typingSpeed);
+    float typingSpeed = 0.1f;
+    int totalChars = (int)scenes[currentScene].text.length();
+    int currentCharsToShow = (int)(sceneTimer / typingSpeed);
+    if (currentCharsToShow > totalChars) currentCharsToShow = totalChars;
 
-        // Play meow sound exactly when "Meowwwwwwwwwwwwwwwwwwwww!" starts to appear
-        if (meowPos != std::string::npos && charsToShow >= (int)meowPos && !meowPlayed) {
+    // Play sound for each new character, only if the previous sound isn't playing
+    if (displayedChars < currentCharsToShow) {
+        displayedChars++;
+
+        if (!IsSoundPlaying(typingSound)) {
+            PlaySound(typingSound);
+        }
+    }
+
+    // Play meow sound in the last scene
+    if (currentScene == scenes.size() - 1) {
+        size_t meowPos = scenes[currentScene].text.find("Meowwwwwwwwwwwwwwww!");
+        if (meowPos != std::string::npos && displayedChars >= (int)meowPos && !meowPlayed) {
             PlaySound(meowSound);
             meowPlayed = true;
         }
     }
     else {
-        meowPlayed = false; // Reset for next time
+        meowPlayed = false; // Reset when not in last scene
     }
 
+    // Handle skip button
     bool skipPressed = allowSkipButton &&
         (IsKeyPressed(KEY_ENTER) ||
             (IsMouseButtonPressed(MOUSE_LEFT_BUTTON) &&
@@ -77,28 +95,26 @@ void Intro::Update() {
 
     bool isLastScene = currentScene == (int)scenes.size() - 1;
 
-    // Chuyển cảnh nếu nhấn Skip hoặc hết thời gian cảnh
     if (skipPressed) {
         if (!isLastScene) {
             AdvanceScene();
         }
         else {
-            finished = true;  // Cho phép Skip cảnh cuối ngay lập tức
+            finished = true;
         }
     }
-
     else if (!isLastScene && sceneTimer > sceneDuration) {
         AdvanceScene();
     }
     else if (isLastScene && sceneTimer > sceneDuration && !waiting) {
-        waiting = true; // Bắt đầu trạng thái chờ
-        waitTimer = 0.0f; // Reset bộ đếm chờ
+        waiting = true;
+        waitTimer = 0.0f;
     }
 
     if (waiting) {
-        waitTimer += GetFrameTime(); // Tăng bộ đếm chờ
+        waitTimer += GetFrameTime();
         if (waitTimer > 10.0f || (skipPressed && isLastScene)) {
-            finished = true; // Kết thúc sau 10 giây chờ hoặc nếu nhấn Skip ở cảnh cuối
+            finished = true;
         }
     }
 }
@@ -117,18 +133,13 @@ void Intro::Draw() {
 
     DrawTextureEx(tex, { (float)posX, (float)posY }, 0.0f, scale, WHITE);
 
-    // Typing effect
-    float typingSpeed = 0.1f; // Tăng tốc độ đánh máy để chậm hơn
-    int charsToShow = (int)(sceneTimer / typingSpeed);
+    // Draw text up to displayed characters
     std::string fullText = scenes[currentScene].text;
-    if (charsToShow > (int)fullText.length()) charsToShow = fullText.length();
+    std::string textToShow = fullText.substr(0, displayedChars);
 
-    std::string textToShow = fullText.substr(0, charsToShow);
-
-    // Draw text aligned with image
     float textPosX = (float)posX;
     float textPosY = posY + imgHeight + 20;
-    float maxTextWidth = imgWidth; // Giới hạn chiều rộng đúng bằng ảnh
+    float maxTextWidth = imgWidth;
 
     DrawMultilineText(textToShow, { textPosX, textPosY }, maxTextWidth, 28, 1, WHITE);
 
@@ -136,21 +147,21 @@ void Intro::Draw() {
     if (allowSkipButton) {
         Rectangle skipButton = { GetScreenWidth() - 140, GetScreenHeight() - 60, 120, 40 };
         DrawRectangleRec(skipButton, DARKGRAY);
-        DrawTextEx(font, "Skip", { skipButton.x + 30, skipButton.y + 8 }, 24, 1, WHITE);
+        Vector2 skipTextSize = MeasureTextEx(font, "Skip", 24, 1);
+        float skipTextX = skipButton.x + (skipButton.width - skipTextSize.x) / 2;
+        float skipTextY = skipButton.y + (skipButton.height - skipTextSize.y) / 2;
+        DrawTextEx(font, "Skip", { skipTextX, skipTextY }, 24, 1, WHITE);
     }
 }
-
 
 void Intro::DrawMultilineText(const std::string& text, Vector2 pos, float maxWidth, float fontSize, float spacing, Color color) {
     std::vector<std::string> lines;
     std::string currentLine;
     std::string currentWord;
 
-    // Duyệt từng ký tự trong text
     for (size_t i = 0; i < text.length(); ++i) {
         char c = text[i];
         if (c == '\n') {
-            // Nếu gặp \n, thêm từ hiện tại vào dòng và kết thúc dòng
             if (!currentWord.empty()) {
                 std::string test = currentLine.empty() ? currentWord : currentLine + ' ' + currentWord;
                 Vector2 size = MeasureTextEx(font, test.c_str(), fontSize, spacing);
@@ -163,14 +174,12 @@ void Intro::DrawMultilineText(const std::string& text, Vector2 pos, float maxWid
                 }
                 currentWord.clear();
             }
-            // Thêm dòng hiện tại vào danh sách và bắt đầu dòng mới
             if (!currentLine.empty()) {
                 lines.push_back(currentLine);
                 currentLine.clear();
             }
         }
         else if (c == ' ') {
-            // Nếu gặp khoảng trắng, thêm từ hiện tại vào dòng
             if (!currentWord.empty()) {
                 std::string test = currentLine.empty() ? currentWord : currentLine + ' ' + currentWord;
                 Vector2 size = MeasureTextEx(font, test.c_str(), fontSize, spacing);
@@ -185,12 +194,10 @@ void Intro::DrawMultilineText(const std::string& text, Vector2 pos, float maxWid
             }
         }
         else {
-            // Thêm ký tự vào từ hiện tại
             currentWord += c;
         }
     }
 
-    // Xử lý từ cuối cùng và dòng cuối cùng
     if (!currentWord.empty()) {
         std::string test = currentLine.empty() ? currentWord : currentLine + ' ' + currentWord;
         Vector2 size = MeasureTextEx(font, test.c_str(), fontSize, spacing);
@@ -206,7 +213,6 @@ void Intro::DrawMultilineText(const std::string& text, Vector2 pos, float maxWid
         lines.push_back(currentLine);
     }
 
-    // Vẽ các dòng
     for (size_t i = 0; i < lines.size(); ++i) {
         DrawTextEx(font, lines[i].c_str(),
             { pos.x, pos.y + i * (fontSize + spacing) },
@@ -220,14 +226,15 @@ bool Intro::IsFinished() const {
 
 void Intro::AdvanceScene() {
     sceneTimer = 0.0f;
+    displayedChars = 0; // Reset displayed characters for new scene
     if (currentScene < (int)scenes.size() - 1) {
         currentScene++;
-        waiting = false; // Reset trạng thái chờ khi chuyển cảnh
-        meowPlayed = false; // Reset meow sound
+        waiting = false;
+        meowPlayed = false;
     }
     else {
         if (!waiting) {
-            waiting = true; // Bắt đầu trạng thái chờ
+            waiting = true;
             waitTimer = 0.0f;
         }
     }

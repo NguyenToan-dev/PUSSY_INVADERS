@@ -2,7 +2,7 @@
 #include "raylib.h"
 #include <string>
 #include <vector>
-#include <sstream>
+
 struct IntroScene {
     std::string imagePath;
     std::string text;
@@ -12,7 +12,6 @@ class Intro {
 public:
     Intro();
     ~Intro();
-
     void Update();
     void Draw();
     bool IsFinished() const;
@@ -27,13 +26,14 @@ private:
     Music music;
     Sound meowSound;
     Font font;
-
+    Sound typingSound;
+    int displayedChars = 0; // Tracks the number of characters displayed in the current scene
     int currentScene = 0;
     float sceneTimer = 0.0f;
     float sceneDuration = 7.0f;
     bool finished = false;
     bool allowSkipButton = false;
     bool meowPlayed = false;
-    bool waiting = false; 
-    float waitTimer = 0.0f; 
+    bool waiting = false;
+    float waitTimer = 0.0f;
 };
