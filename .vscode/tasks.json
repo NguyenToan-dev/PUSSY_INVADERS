@@ -1,0 +1,40 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build Raylib Game",
+      "type": "shell",
+      "command": "C:/msys64/ucrt64/bin/g++.exe",
+      "args": [
+        "-g",
+        "src/Background.cpp",
+        "src/Brightness.cpp",
+        "src/bullet.cpp",
+        "src/GameController.cpp",
+        "src/GameOver.cpp",
+        "src/main.cpp",
+        "src/MusicController.cpp",
+        "src/Pussy.cpp",
+        "src/Pussy2.cpp",
+        "src/Pussy3.cpp",
+        "src/SpaceShip.cpp",
+        "src/SpaceShipTexture.cpp",
+        "src/ThunderBullet.cpp",
+        "src/Pickup.cpp",
+        "src/PussyBase.cpp",
+        "-o", "game.exe",
+        "-I", "C:/msys64/ucrt64/include",
+        "-L", "C:/msys64/ucrt64/lib",
+        "-lraylib",
+        "-lopengl32",
+        "-lgdi32",
+        "-lwinmm"
+      ],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$gcc"]
+    }
+  ]
+}

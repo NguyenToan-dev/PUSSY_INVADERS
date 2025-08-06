@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+
+    {
+      "name": "Debug Raylib Game",
+      "type": "cppdbg",
+      "request": "launch",
+
+      // file EXE do tasks.json sinh ra
+      "program": "${workspaceFolder}/game.exe",
+
+      // build tự động trước khi launch
+      "preLaunchTask": "Build Raylib Game",
+
+      // thư mục working directory để LoadTexture/LoadSound dùng đúng path
+      "cwd": "${workspaceFolder}",
+
+      // bạn có thể để false để dùng integrated terminal
+      "externalConsole": false,
+
+      // dùng GDB đi kèm MSYS2 UCRT64
+      "MIMode": "gdb",
+      "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",
+
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+
+  ]
+}
