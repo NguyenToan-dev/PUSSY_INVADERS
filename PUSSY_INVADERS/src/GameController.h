@@ -34,6 +34,7 @@ private:
     //std::vector<Bullet*> thunderBullets;
     Sound thunderSound;
 
+
     double timestart;
     float blinkspeed;
     float blinkduration;
