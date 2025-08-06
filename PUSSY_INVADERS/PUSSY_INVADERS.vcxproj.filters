@@ -57,6 +57,9 @@
     <ClInclude Include="src\Intro.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\IntroTypingAudio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\Menu.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -102,9 +105,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\Intro.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Menu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
