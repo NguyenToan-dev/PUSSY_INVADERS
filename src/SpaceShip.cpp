@@ -5,18 +5,34 @@
 #include <random>
 
 // Thiết lập giới hạn nhiệt độ
-int SpaceShip::heat_limit = 2000;
+int SpaceShip::heat_limit = 500;
+
+// NOTE: Spaceship scale factor - adjust this to make ship bigger/smaller
+// 0.2f = normal size, 0.15f = smaller, 0.25f = larger
+float SpaceShip::ship_scale = 0.1f; // Made smaller as requested
 
 // Constructor: khởi tạo các thuộc tính ban đầu
 SpaceShip::SpaceShip()
 {
-    live_counter = 5;           // Mạng sống ban đầu
-    missile_counter = 0;        // Số tên lửa
-    weapon_level = 0;           // Cấp độ vũ khí
-    thigh_counter = 0;          // Thigh item 
-    overheat = 0;               // Nhiệt độ hiện tại
-    score = 0;                  // Điểm số
-    InsertSpaceShipTexture();   // Load hình ảnh tàu
+    live_counter = 5; // Mạng sống ban đầu
+    missile_counter = 0; // Số tên lửa
+    weapon_level = 0; // Cấp độ vũ khí
+    thigh_counter = 0; // Thigh item
+    overheat = 0; // Nhiệt độ hiện tại
+    score = 0; // Điểm số
+
+    // Initialize recoil variables
+    recoil_offset = { 0.0f, 0.0f };
+    recoil_timer = 0.0f;
+    recoil_duration = 0.2f; // Recoil lasts for 0.1 seconds
+    recoil_strength = 20.0f; // How far back the ship moves
+
+	// Tilting logic variables
+    previous_mouse_pos = { 0.0f, 0.0f };
+    horizontal_velocity = 0.0f;
+    smooth_velocity = 0.0f;
+
+    InsertSpaceShipTexture(); // Load hình ảnh tàu
     font = LoadFont("font/ChonkyBitsFontBold.otf"); // Load font chữ
 }
 
@@ -29,6 +45,11 @@ void SpaceShip::SetAttribute()
     thigh_counter = 0;
     overheat = 0;
     score = 0;
+
+    // Reset recoil
+    recoil_offset = { 0.0f, 0.0f };
+    recoil_timer = 0.0f;
+
     InsertSpaceShipTexture();
     font = LoadFont("font/ChonkyBitsFontBold.otf");
 }
@@ -52,28 +73,92 @@ Texture2D SpaceShip::GetShip() const { return image.ship.texture; }
 // Getter – trả về texture của lửa đẩy
 Texture2D SpaceShip::GetFireball() const { return image.fireball.texture; }
 
+// NOTE: SetShipScale() - Use this function to change ship size during runtime
+void SpaceShip::SetShipScale(float scale) {
+    ship_scale = scale;
+}
+
+// NOTE: GetShipScale() - Get current ship scale
+float SpaceShip::GetShipScale() const {
+    return ship_scale;
+}
+
+// Update recoil effect
+void SpaceShip::UpdateRecoil()
+{
+    if (recoil_timer > 0.0f) {
+        recoil_timer -= GetFrameTime();
+
+        // Calculate recoil progress (1.0 at start, 0.0 at end)
+        float progress = recoil_timer / recoil_duration;
+        if (progress < 0.0f) progress = 0.0f;
+
+        // Use smooth easing for natural recoil movement
+        float eased_progress = progress * progress * (3.0f - 2.0f * progress); // Smoothstep
+
+        // Apply recoil offset (moving ship backward/downward)
+        recoil_offset.x = 0.0f; // No horizontal recoil
+        recoil_offset.y = recoil_strength * eased_progress;
+    }
+    else {
+        recoil_offset = { 0.0f, 0.0f };
+    }
+}
+
+// Apply recoil when shooting
+void SpaceShip::ApplyRecoil()
+{
+    recoil_timer = recoil_duration;
+
+    // Add some randomness to recoil direction for variety
+    static std::random_device rd;
+    static std::mt19937 gen(rd());
+    std::uniform_real_distribution<float> dis(-1.0f, 1.0f);
+
+    // Small horizontal component for more realistic feel
+    float horizontal_variance = dis(gen) * 2.0f;
+    recoil_offset.x = horizontal_variance;
+}
+
 // Hiển thị tàu theo vị trí chuột
 void SpaceShip::Moving()
 {
+    UpdateRecoil(); // Update recoil effect
+
     Vector2 mouse = GetMousePosition();
     Vector2 pos = BoundChecking(mouse);
-    DrawTextureEx(image.ship.texture, pos, 0.0f, 0.2f, WHITE);
 
+    // Apply recoil offset to ship position
+    pos.x += recoil_offset.x;
+    pos.y += recoil_offset.y;
+
+    // Draw tilted ship and fireball
+    DrawTiltedShip(image.ship.texture, pos, ship_scale, WHITE);
     Vector2 pos1 = RocketPosition(pos);
-    Color tint = fireball_brightness.TintColor(); // màu sắc của lửa đẩy
-    DrawTextureEx(image.fireball.texture, pos1, 0.0f, 0.2f, tint);
+    Color tint = fireball_brightness.TintColor();
+    DrawTiltedShip(image.fireball.texture, pos1, ship_scale, tint);
+
     return;
 }
+
 
 // Hiển thị tàu khi bị trúng đạn (nhấp nháy)
 void SpaceShip::MovingWhileBlinking(Color shiptint)
 {
+    UpdateRecoil(); // Update recoil effect
+
     Vector2 mouse = GetMousePosition();
     Vector2 pos = BoundChecking(mouse);
-    DrawTextureEx(image.ship.texture, pos, 0.0f, 0.2f, shiptint);
 
+    // Apply recoil offset to ship position
+    pos.x += recoil_offset.x;
+    pos.y += recoil_offset.y;
+
+    // Draw tilted ship and fireball with tint
+    DrawTiltedShip(image.ship.texture, pos, ship_scale, shiptint);
     Vector2 pos1 = RocketPosition(pos);
-    DrawTextureEx(image.fireball.texture, pos1, 0.0f, 0.2f, shiptint);
+    DrawTiltedShip(image.fireball.texture, pos1, ship_scale, shiptint);
+
     return;
 }
 
@@ -85,149 +170,154 @@ void SpaceShip::StatusBar()
     // Hiển thị thông tin
     DrawTextEx(font, TextFormat("SCORE: %llu", score), { 0.0f, 0.0f }, 40.0f, 0.0f, GREEN);
     DrawTextEx(font, TextFormat("HEAT: %d/%d", overheat, heat_limit), { 0.0f, 40.0f }, 40.0f, 0.0f, GREEN);
-    DrawTextureEx(image.bar.texture, image.bar.pos, 0.0f, 1.2f, WHITE);
 
-    // Hiển thị số lượng vật phẩm
-    Vector2 pos;
+    // Move the status bar image slightly upward
+    Vector2 adjustedBarPos = image.bar.pos;
+    adjustedBarPos.y -= 20.0f;
+    DrawTextureEx(image.bar.texture, adjustedBarPos, 0.0f, 1.0f, WHITE);
 
-    DrawTextureEx(image.live.texture, image.live.pos, 0.0f, 0.02f, WHITE);
-    pos.x = image.live.pos.x + static_cast<float>(image.live.texture.width) * 0.02f;
-    pos.y = static_cast<float>(GetScreenHeight() - 50);
+    // Initialize position vector for item counts
+    Vector2 pos = { 0.0f, static_cast<float>(GetScreenHeight() - 50) };
+
+    // Draw item counts with proper positioning
+    pos.x = image.live.pos.x + 50;
+	pos.y = image.live.pos.y - 5; // Adjust Y position for better alignment
     DrawTextEx(font, TextFormat("\t%d\t", live_counter), pos, 40.0f, 0.0f, GREEN);
 
-    DrawTextureEx(image.missile.texture, image.missile.pos, 0.0f, 0.1f, WHITE);
-    pos.x = image.missile.pos.x + static_cast<float>(image.missile.texture.width) * 0.1f;
+    pos.x = image.missile.pos.x + 0;
+    pos.y = image.missile.pos.y + 5; // Adjust Y position for better alignment
     DrawTextEx(font, TextFormat("\t%d\t", missile_counter), pos, 40.0f, 0.0f, GREEN);
 
-    DrawTextureEx(image.thigh.texture, image.thigh.pos, 0.0f, 0.07f, WHITE);
-    pos.x = image.thigh.pos.x + static_cast<float>(image.thigh.texture.width) * 0.07f;
-    DrawTextEx(font, TextFormat("\t%d\t", thigh_counter), pos, 40.0f, 0.0f, GREEN);
+    pos.x = image.thigh.pos.x + 0;
+    pos.y = image.thigh.pos.y + 5; // Adjust Y position for better alignment
+    DrawTextEx(font, TextFormat("\t%d\t", sushi_collected), pos, 40.0f, 0.0f, GREEN);
 
-    DrawTextureEx(image.level.texture, image.level.pos, 0.0f, 0.065f, WHITE);
-    pos.x = image.level.pos.x + static_cast<float>(image.level.texture.width) * 0.065f;
+    pos.x = image.level.pos.x + 0;
+    pos.y = image.level.pos.y + 5; // Adjust Y position for better alignment
     DrawTextEx(font, TextFormat("\t%d\t", weapon_level), pos, 40.0f, 0.0f, GREEN);
 }
 
-// Cập nhật trạng thái tàu
-void SpaceShip::UpdateStatus(ShipStatus flag)
-{
-    if (flag == HEAT_DECREASE)
+
+    // Cập nhật trạng thái tàu
+    void SpaceShip::UpdateStatus(ShipStatus flag)
     {
-        // Giảm nhiệt
-        overheat -= 5;
-        if (overheat <= 0)
-            overheat = 0;
-    }
-    else if (flag == HEAT_INCREASE)
-    {
-        // Tăng nhiệt
-        if (overheat >= heat_limit)
+        if (flag == HEAT_DECREASE)
         {
-            overheat = heat_limit;
-            return;
+            // Giảm nhiệt
+            overheat -= 5;
+            if (overheat <= 0)
+                overheat = 0;
         }
-        overheat += 40;
-    }
-    else if (flag >= SCORE_GAIN_1 && flag <= SCORE_GAIN_3)
-    {
-        // Tăng điểm theo loại kẻ địch
-        if (flag == SCORE_GAIN_1)
-            score += 50;
-        else if (flag == SCORE_GAIN_2)
-            score += 100;
-        else if (flag == SCORE_GAIN_3)
-            score += 150;
-    }
-    else if (flag == LIVE_DECREASE)
-    {
-        // Mất mạng
-        live_counter--;
-        if (live_counter <= 0)
-            live_counter = 0;
-    }
-    else if (flag == LEVEL_UP)
-    {
-        // Tăng cấp vũ khí tối đa 5
-        if (weapon_level >= 5)
-            weapon_level = 5;
-        else
-            weapon_level++;
-    }
-    else if (flag == MISSILE_ADD)
-    {
-        // Thêm tên lửa, tối đa 10
-        if (missile_counter >= 10)
-            missile_counter = 10;
-        else
-            missile_counter++;
-    }
-    else if (flag == SUSHI_ADD)
-    {
-        // Nhặt sushi
-        sushi_collected++;
-
-        // Kiểm tra nếu đủ để đổi tên lửa
-        int totalSushiValue = sushi_collected + milk_collected * 5;
-        while (totalSushiValue >= 10) {
-            missile_counter++;
-            if (missile_counter > 10) missile_counter = 10;
-
-            // Trừ sushi/milk sau khi đổi
-            if (sushi_collected >= 10) {
-                sushi_collected -= 10;
+        else if (flag == HEAT_INCREASE)
+        {
+            // Tăng nhiệt
+            if (overheat >= heat_limit)
+            {
+                overheat = heat_limit;
+                return;
             }
-            else {
-                int remaining = 10 - sushi_collected;
-                sushi_collected = 0;
-                int milkToUse = (remaining + 4) / 5;
-                milk_collected -= milkToUse;
-                if (milk_collected < 0) milk_collected = 0;
-            }
-
-            totalSushiValue = sushi_collected + milk_collected * 5;
+            overheat += 40;
         }
-    }
-    else if (flag == MILK_ADD)
-    {
-        // Tương tự sushi – cộng milk và đổi tên lửa
-        milk_collected++;
-
-        int totalSushiValue = sushi_collected + milk_collected * 5;
-        while (totalSushiValue >= 10) {
-            missile_counter++;
-            if (missile_counter > 10) missile_counter = 10;
-
-            if (sushi_collected >= 10) {
-                sushi_collected -= 10;
-            }
-            else {
-                int remaining = 10 - sushi_collected;
-                sushi_collected = 0;
-                int milkToUse = (remaining + 4) / 5;
-                milk_collected -= milkToUse;
-                if (milk_collected < 0) milk_collected = 0;
-            }
-
-            totalSushiValue = sushi_collected + milk_collected * 5;
+        else if (flag >= SCORE_GAIN_1 && flag <= SCORE_GAIN_3)
+        {
+            // Tăng điểm theo loại kẻ địch
+            if (flag == SCORE_GAIN_1)
+                score += 50;
+            else if (flag == SCORE_GAIN_2)
+                score += 100;
+            else if (flag == SCORE_GAIN_3)
+                score += 150;
         }
-    }
-    else if (flag == NEW_BULLET)
-    {
-        // Nhặt gift – chuyển loại đạn
-        // TODO: đặt cờ hoặc thay đổi texture
-    }
-    else if (flag == LEVEL_UP)
-    {
-        // Tăng cấp từ battery
-        battery_collected++;
-        if (weapon_level >= 5)
-            weapon_level = 5;
-        else
-            weapon_level++;
-    }
+        else if (flag == LIVE_DECREASE)
+        {
+            // Mất mạng
+            live_counter--;
+            if (live_counter <= 0)
+                live_counter = 0;
+        }
+        else if (flag == LEVEL_UP)
+        {
+            // Tăng cấp vũ khí tối đa 5
+            if (weapon_level >= 5)
+                weapon_level = 5;
+            else
+                weapon_level++;
+        }
+        else if (flag == MISSILE_ADD)
+        {
+            // Thêm tên lửa, tối đa 10
+            if (missile_counter >= 10)
+                missile_counter = 10;
+            else
+                missile_counter++;
+        }
+        else if (flag == SUSHI_ADD)
+        {
+            // Nhặt sushi
+            sushi_collected++;
 
-    return;
-}
+            // Kiểm tra nếu đủ để đổi tên lửa
+            int totalSushiValue = sushi_collected + milk_collected * 5;
+            while (totalSushiValue >= 10) {
+                missile_counter++;
+                if (missile_counter > 10) missile_counter = 10;
+
+                // Trừ sushi/milk sau khi đổi
+                if (sushi_collected >= 10) {
+                    sushi_collected -= 10;
+                }
+                else {
+                    int remaining = 10 - sushi_collected;
+                    sushi_collected = 0;
+                    int milkToUse = (remaining + 4) / 5;
+                    milk_collected -= milkToUse;
+                    if (milk_collected < 0) milk_collected = 0;
+                }
+
+                totalSushiValue = sushi_collected + milk_collected * 5;
+            }
+        }
+        else if (flag == MILK_ADD)
+        {
+            // Tương tự sushi – cộng milk và đổi tên lửa
+            milk_collected++;
+
+            int totalSushiValue = sushi_collected + milk_collected * 5;
+            while (totalSushiValue >= 10) {
+                missile_counter++;
+                if (missile_counter > 10) missile_counter = 10;
+
+                if (sushi_collected >= 10) {
+                    sushi_collected -= 10;
+                }
+                else {
+                    int remaining = 10 - sushi_collected;
+                    sushi_collected = 0;
+                    int milkToUse = (remaining + 4) / 5;
+                    milk_collected -= milkToUse;
+                    if (milk_collected < 0) milk_collected = 0;
+                }
+
+                totalSushiValue = sushi_collected + milk_collected * 5;
+            }
+        }
+        else if (flag == NEW_BULLET)
+        {
+            // Nhặt gift – chuyển loại đạn
+            // TODO: đặt cờ hoặc thay đổi texture
+        }
+        else if (flag == LEVEL_UP)
+        {
+            // Tăng cấp từ battery
+            battery_collected++;
+            if (weapon_level >= 5)
+                weapon_level = 5;
+            else
+                weapon_level++;
+        }
+
+        return;
+    }
 
 // Wrapper cho UpdateStatus
 void SpaceShip::AdjustStatus(ShipStatus flag)
@@ -240,8 +330,8 @@ void SpaceShip::AdjustStatus(ShipStatus flag)
 // Kiểm tra tàu có ra ngoài màn hình không
 Vector2 SpaceShip::BoundChecking(Vector2 mouse)
 {
-    float width = static_cast<float>(image.ship.texture.width) * 0.2f;
-    float height = static_cast<float>(image.ship.texture.height) * 0.2f;
+    float width = static_cast<float>(image.ship.texture.width) * ship_scale; // Use scalable size
+    float height = static_cast<float>(image.ship.texture.height) * ship_scale; // Use scalable size
 
     Vector2 pos;
     pos.x = mouse.x - width / 2.0f;
@@ -261,9 +351,9 @@ Vector2 SpaceShip::BoundChecking(Vector2 mouse)
 // Vị trí rocket fireball nằm dưới thân tàu
 Vector2 SpaceShip::RocketPosition(Vector2 topleft)
 {
-    float Swidth = static_cast<float>(image.ship.texture.width) * 0.2f;
-    float Sheight = static_cast<float>(image.ship.texture.height) * 0.2f;
-    float Fwidth = static_cast<float>(image.fireball.texture.width) * 0.2f;
+    float Swidth = static_cast<float>(image.ship.texture.width) * ship_scale; // Use scalable size
+    float Sheight = static_cast<float>(image.ship.texture.height) * ship_scale; // Use scalable size
+    float Fwidth = static_cast<float>(image.fireball.texture.width) * ship_scale; // Use scalable size
     Vector2 pos;
     pos.y = topleft.y + Sheight;
     pos.x = topleft.x + Swidth / 2.0f - Fwidth / 2.0f;
@@ -274,12 +364,15 @@ Vector2 SpaceShip::RocketPosition(Vector2 topleft)
 void SpaceShip::Shooting(std::vector<Bullet>& bullets, Texture2D* bulletTexture)
 {
     UpdateStatus(HEAT_INCREASE);
+    ApplyRecoil(); // Apply recoil effect when shooting
+
     Vector2 mouse = GetMousePosition();
     Vector2 pos = BoundChecking(mouse);
-    float scale = 0.2f;
+
+    // Apply recoil offset to bullet spawn position for consistency
     Vector2 center;
-    center.x = pos.x + static_cast<float>(image.ship.texture.width) * scale / 2.0f;
-    center.y = pos.y + static_cast<float>(image.ship.texture.height) * scale / 2.0f;
+    center.x = pos.x + static_cast<float>(image.ship.texture.width) * ship_scale / 2.0f + recoil_offset.x; // Use scalable size
+    center.y = pos.y + static_cast<float>(image.ship.texture.height) * ship_scale / 2.0f + recoil_offset.y; // Use scalable size
     bullets.emplace_back(center, bulletTexture);
 }
 
@@ -288,10 +381,20 @@ Rectangle SpaceShip::getRect()
 {
     Vector2 mouse = GetMousePosition();
     Rectangle ret;
-    ret.x = mouse.x - image.ship.texture.height * .2f / 2.0;
-    ret.y = mouse.y - image.ship.texture.width * .2f / 2.0;
-    ret.width = image.ship.texture.width * .2f;
-    ret.height = image.ship.texture.height * .2f;
+
+    // --- MODIFICATION: Make hitbox smaller ---
+    // This makes the hitbox 70% of the visual size. Change 0.7f to whatever you like.
+    constexpr float hitbox_scale_modifier = 0.5f;
+
+    // Calculate the smaller hitbox dimensions
+    ret.width = image.ship.texture.width * ship_scale * hitbox_scale_modifier;
+    ret.height = image.ship.texture.height * ship_scale * hitbox_scale_modifier;
+
+    // Apply recoil offset and center the hitbox correctly
+    // BUG FIX: Used ret.width for X and ret.height for Y to correctly center it.
+    ret.x = mouse.x - ret.width / 2.0f + recoil_offset.x;
+    ret.y = mouse.y - ret.height / 2.0f + recoil_offset.y;
+
     return ret;
 }
 
@@ -302,8 +405,10 @@ int SpaceShip::HitBoxChecking(vector<Bullet*>& bullets)
     {
         if (CheckCollisionRecs(bullet->getRect(), getRect()))
         {
-            bullet->active = false;
-            bullet->position.x = -9999;
+            bullet->SetActive(false);
+            Vector2 pos = bullet->GetPosition();
+            pos.x = -9999;
+            bullet->SetPosition(pos);
             UpdateStatus(LIVE_DECREASE);
             if (live_counter == 0)
                 return 2; // tàu nổ
@@ -352,4 +457,52 @@ void SpaceShip::EatPickup()
             --i;
         }
     }
+}
+
+// Add this function to your SpaceShip class or as a utility function
+float Lerp(float a, float b, float t) {
+    return a + (b - a) * t;
+}
+// Tilting logic for smooth movement
+void SpaceShip::DrawTiltedShip(Texture2D texture, Vector2 position, float scale, Color tint)
+{
+    // Calculate current horizontal velocity
+    Vector2 current_mouse = GetMousePosition();
+    horizontal_velocity = (current_mouse.x - previous_mouse_pos.x) / GetFrameTime();
+    previous_mouse_pos = current_mouse;
+
+    // Smooth the velocity for better visual effect
+    smooth_velocity = Lerp(smooth_velocity, horizontal_velocity, 8.0f * GetFrameTime());
+
+    // Create tilt effect using skew/shear
+
+    float tilt_factor = smooth_velocity * 0.0007f; // Adjust this for more/less tilt
+
+    tilt_factor = fmax(-0.3f, fmin(0.3f, tilt_factor)); // Limit tilt amount
+
+    // Calculate skewed positions for a parallelogram effect
+    float width = texture.width * scale;
+    float height = texture.height * scale;
+
+    // Skew the ship by offsetting top and bottom differently
+    Vector2 topLeft = { position.x - tilt_factor * height * 0.5f, position.y };
+    Vector2 topRight = { position.x + width - tilt_factor * height * 0.5f, position.y };
+    Vector2 bottomLeft = { position.x + tilt_factor * height * 0.5f, position.y + height };
+    Vector2 bottomRight = { position.x + width + tilt_factor * height * 0.5f, position.y + height };
+
+    // Since Raylib doesn't have built-in quad rendering, we'll use rotation instead
+    // but with a slight scale distortion for the skew effect
+    Rectangle source = { 0, 0, (float)texture.width, (float)texture.height };
+    Rectangle dest = {
+        position.x + width / 2,
+        position.y + height / 2,
+        width * (1.0f + abs(tilt_factor) * 0.1f), // Slight horizontal stretch
+        height
+    };
+    Vector2 origin = { width / 2, height / 2 };
+
+    // Convert tilt to rotation angle (degrees)
+    float rotation_angle = tilt_factor * 30.0f; // Convert to degrees, max ±9 degrees
+
+    DrawTexturePro(texture, source, dest, origin, rotation_angle, tint);
 }

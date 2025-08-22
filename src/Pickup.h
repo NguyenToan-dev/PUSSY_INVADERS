@@ -65,6 +65,8 @@ private:
 
     int bounceCount;      // Đếm số lần nảy (tối đa 2)
 
+    static Texture2D texGlow;        // Glow effect texture
+
     // Hàm load texture (chỉ gọi 1 lần)
     static void LoadTextures();
 };

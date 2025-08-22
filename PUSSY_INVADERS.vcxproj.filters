@@ -62,7 +62,13 @@
     <ClInclude Include="src\IntroTypingAudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD:PUSSY_INVADERS.vcxproj.filters
 >>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj.filters
+=======
+    <ClInclude Include="src\Menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+>>>>>>> Hai:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj.filters
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Background.cpp">
@@ -109,9 +115,12 @@
     <ClCompile Include="src\Intro.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD:PUSSY_INVADERS.vcxproj.filters
     <ClCompile Include="src\IntroTypingAudio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
 >>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj.filters
+=======
+>>>>>>> Hai:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj.filters
   </ItemGroup>
 </Project>

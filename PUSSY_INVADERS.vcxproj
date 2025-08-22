@@ -29,6 +29,7 @@
 =======
     <ClInclude Include="src\Intro.h" />
     <ClInclude Include="src\IntroTypingAudio.h" />
+    <ClInclude Include="src\Menu.h" />
     <ClInclude Include="src\Meteor.h" />
 >>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj
     <ClInclude Include="src\MusicController.h" />
@@ -50,6 +51,7 @@
     <ClCompile Include="src\Intro.cpp" />
     <ClCompile Include="src\IntroTypingAudio.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\Menu.cpp" />
     <ClCompile Include="src\Meteor.cpp" />
 >>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj
     <ClCompile Include="src\MusicController.cpp" />

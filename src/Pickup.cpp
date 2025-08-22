@@ -9,6 +9,7 @@ Texture2D Pickup::texMilk{};
 Texture2D Pickup::texGift1{};
 Texture2D Pickup::texGift2{};
 Texture2D Pickup::texGift3{};
+Texture2D Pickup::texGlow{};  // Added glow texture
 bool Pickup::isLoaded = false;
 bool Pickup::batteryDropped = false;
 float Pickup::giftTimer = 0.0f;
@@ -46,6 +47,7 @@ void Pickup::LoadTextures() {
     texGift1 = LoadTexture("image/gift-1.png");
     texGift2 = LoadTexture("image/gift-2.png");
     texGift3 = LoadTexture("image/gift-3.png");
+    texGlow = LoadTexture("image/glow_effect.png");  // Load glow texture
 
     isLoaded = true;
 }
@@ -204,9 +206,23 @@ void Pickup::Update(float dt) {
 }
 
 // ------------------------------------------------------------
-// Vẽ 1 pickup với xoay
+// Vẽ 1 pickup với glow effect (glow rotates with pickup)
 // ------------------------------------------------------------
 void Pickup::Draw() const {
+    const float size = 40.f;
+    const float glowSize = size * 1.5f;  // Glow is larger than pickup
+
+    // Draw glow effect behind pickup with same rotation as pickup
+    DrawTexturePro(
+        texGlow,
+        { 0, 0, (float)texGlow.width, (float)texGlow.height },
+        { position.x - glowSize / 2, position.y - glowSize / 2, glowSize, glowSize },
+        { glowSize / 2, glowSize / 2 },
+        rotationAngle,  // Same rotation as pickup
+        WHITE
+    );
+
+    // Draw pickup on top with its own rotation
     Texture2D tex;
     switch (type) {
     case PickupType::Sushi:   tex = texSushi;   break;
@@ -217,7 +233,6 @@ void Pickup::Draw() const {
     case PickupType::Gift3:   tex = texGift3;   break;
     }
 
-    const float size = 40.f;
     DrawTexturePro(
         tex,
         { 0, 0, (float)tex.width, (float)tex.height },
