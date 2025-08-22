@@ -36,11 +36,6 @@ private:
     std::vector<Bullet*> pussyBullets;
     Texture2D thunder_texture;
     Sound thunderSound;
-<<<<<<< HEAD:src/GameController.h
-=======
-
-
->>>>>>> Hai:PUSSY_INVADERS/src/GameController.h
     double timestart;
     float blinkspeed;
     float blinkduration;
