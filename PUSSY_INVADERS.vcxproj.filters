@@ -51,6 +51,18 @@
     <ClInclude Include="src\Pickup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD:PUSSY_INVADERS.vcxproj.filters
+=======
+    <ClInclude Include="src\Meteor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Intro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IntroTypingAudio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+>>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj.filters
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Background.cpp">
@@ -89,5 +101,17 @@
     <ClCompile Include="src\Pickup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD:PUSSY_INVADERS.vcxproj.filters
+=======
+    <ClCompile Include="src\Meteor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Intro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IntroTypingAudio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+>>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj.filters
   </ItemGroup>
 </Project>

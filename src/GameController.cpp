@@ -36,11 +36,17 @@ GameController::GameController()
             pussies.push_back(new Pussy(1, pos)); // Sửa lỗi: Tạo Pussy thay vì PussyBase
         }
     }
+
     isblinking = false;
     blinkspeed = 10.f;
     blinkduration = 2.f;
     blink1 = { 0, 0, 0, 100 };   // Semi-transparent black (R, G, B, Alpha)
     blink2 = { 255, 255, 255, 100 }; // Semi-transparent white
+
+    //hiện wave
+    gameState = GAME_WAVE_INTRO;
+    waveIntroTimer = 0.0f;  // Thêm biến đếm thời gian hiển thị wave
+    currentWave = 1;        // Để sau này còn tăng lên Wave 2, 3...
 }
 
 GameController::~GameController()
@@ -60,21 +66,57 @@ GameController::~GameController()
     UnloadTexture(bullet_texture);
     UnloadSound(ship_shootsound);
     UnloadSound(pussy_shootsound);
+    
     Pussy::UnloadImage();
     Pussy2::UnloadImage();
     Pussy3::UnloadImage();
     UnloadTexture(thunder_texture);
     UnloadTexture(pussy_shit_texture);
     UnloadSound(thunderSound);
-}   
+
+    MeteorManager::Unload();
+}
 
 void GameController::Update() 
 {
+    //------------hiện wave--------------
+    if (gameState == GAME_WAVE_INTRO) {
+        float frameTime = std::min(GetFrameTime(), 0.1f); // Clamp to 0.1s max
+        waveIntroTimer += frameTime;
+        background.SetRotation(0.5f);
+        if (waveIntroTimer >= 2.0f) {
+            gameState = GAME_COUNTDOWN;
+            countdownTimer = 0.0f;
+        }
+        return;
+    }
+    //------------------------------------
     if (gameState == GAME_PLAYING_STATE) 
     {
         background.SetRotation(background.GetRotation() + background.GetSpeed() * GetFrameTime());
         music.HandleMusic(gameState);
         HandleInput();
+        if (currentWave == 2)
+        {
+            MeteorManager::UpdateAll(GetFrameTime());
+            Rectangle shipRect = ship.getRect();
+            // chỉ check nếu chưa đang nhấp nháy
+            if (!isblinking && MeteorManager::CheckCollisionWithShip(shipRect))
+            {
+                // Trúng meteor → trừ 1 mạng
+                ship.AdjustStatus(LIVE_DECREASE);
+
+                // Bắt đầu nhấp nháy (giống trúng đạn)
+                timestart = GetTime();
+                isblinking = true;
+                ship.StatusBar();    // cập nhật thanh ngay lập tức
+
+                // Nếu hết mạng thì Game Over
+                if (ship.GetLives() == 0)
+                    gameState = GAME_GAME_OVER;
+            }
+        }
+
     }
     else if (gameState == GAME_GAME_OVER) 
     {
@@ -104,8 +146,16 @@ void GameController::Update()
         background.SetCenter((float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f);
         background.CalculateBackgroundScale();
     }
-    //////////////////////////////////
+    
     Pickup::UpdateAll(GetFrameTime());//->Cập nhật tất cả pickups mỗi frame
+
+    // Chỉ update meteor khi đã ở wave 2 trở lên và đang chơi
+    if (currentWave == 2 && gameState == GAME_PLAYING_STATE) {
+        MeteorManager::UpdateAll(GetFrameTime());
+        MeteorManager::CheckCollisionWithBullets(bullets); 
+        Rectangle shipRect = ship.getRect();
+    }
+
 }
 
 void GameController::HandleCountdown() 
@@ -303,7 +353,7 @@ void GameController::HandleObjectDrawing()
 
     for (auto& bullet : bullets) 
     {
-        if (!bullet.active) 
+        if (!bullet.IsActive())
             continue;
         for (auto* pussy : pussies)
         {
@@ -346,7 +396,7 @@ Skip_Ship_Bullets:
         if (r.x < 0 || r.x + r.width > GetScreenWidth()) 
             reachEdge = true;
     }
-    if (reachEdge) 
+    if (reachEdge)
     {
         PussyBase::pussyDirection = -(PussyBase::pussyDirection);
         for (auto* pussy : pussies) 
@@ -405,29 +455,88 @@ Skip_Ship_Bullets:
             return;
         }
     }
-    
+
     if (isblinking)
-        ship.MovingWhileBlinking(currentOverlayColor);
+        ship.MovingWhileBlinking(currentOverlayColor);    // temporary tint color
     else
         ship.Moving();
-    ship.EatPickup();
+    ship.EatPickup();  // <--dòng này để tàu kiểm tra và ăn pickup
 
     ship.StatusBar();
+    //-----kết thúc và chuyển sang wave tiếp theo 
+    if (currentWave == 1 && pussies.empty() && gameState == GAME_PLAYING_STATE)
+    {
+        if (waveTransitionTimer < 0.0f) {
+            waveTransitionTimer = GetTime();  // bắt đầu đếm từ lúc giết con cuối
+        }
+        else if (GetTime() - waveTransitionTimer >= 2.0f) {
+            currentWave = 2;
+            gameState = GAME_WAVE_INTRO;
+            waveIntroTimer = 0.0f;
+            waveTransitionTimer = -1.0f;  // reset lại
+        }
+    }
+    else if (currentWave == 1 && !pussies.empty())
+    {
+        waveTransitionTimer = -1.0f; // nếu có pussy thì hủy đếm
+    }
+
+
+    return;
 }
+
 void GameController::Draw() 
 {
-    HandleObjectDrawing();
+    if (gameState == GAME_WAVE_INTRO) {
+        DrawWaveIntro();
+        return;    // dừng luôn, không vẽ gì khác
+    }
 
+    HandleObjectDrawing();
     if (gameState == GAME_GAME_OVER)
         DrawGameOver();    
     else if (gameState == GAME_COUNTDOWN)
-        DrawCountdown();   
+    {
+        DrawWaveIntro();
+        DrawCountdown();
+    }
     else if (gameState == GAME_PAUSED)
         DrawPaused();   
     //else DrawUI();
 
     Pickup::DrawAll();//recently added
+    // Chỉ vẽ meteor khi đã vào wave 2+
+    if (currentWave > 1) {
+        MeteorManager::DrawAll();
+    }
 }
+
+void GameController::DrawWaveIntro()
+{
+    background.DrawRotatingBackground();
+
+    const char* waveText = TextFormat("WAVE %d", currentWave);
+    int fontSize = 100;
+    int textWidth = MeasureText(waveText, fontSize);
+    int x = (GetScreenWidth() - textWidth) / 2;
+    int y = GetScreenHeight() / 2 - fontSize / 2;
+
+    // Vẽ hiệu ứng glow bằng cách vẽ chữ màu xanh nhạt ở xung quanh
+    Color glowColor = { 100, 200, 255, 150 };  // xanh nhạt, mờ
+
+    for (int dx = -3; dx <= 3; dx++) {
+        for (int dy = -3; dy <= 3; dy++) {
+            if (dx != 0 || dy != 0) {
+                DrawText(waveText, x + dx, y + dy, fontSize, glowColor);
+            }
+        }
+    }
+
+    // Vẽ chữ chính màu trắng
+    DrawText(waveText, x, y, fontSize, WHITE);
+}
+
+
 
 void GameController::DrawGameOver() 
 {

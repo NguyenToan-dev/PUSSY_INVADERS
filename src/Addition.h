@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 const float FADE_BLUR_DURATION = 1.0f;
 const float HOLD_DURATION = 2.0f;
@@ -18,6 +18,7 @@ enum MusicState
 
 enum GameState 
 {
+    GAME_WAVE_INTRO,//mới thêm
     GAME_PLAYING_STATE,
     GAME_GAME_OVER,
     GAME_COUNTDOWN,

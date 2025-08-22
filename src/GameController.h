@@ -12,6 +12,9 @@
 #include "ThunderBullet.h"  
 #include "Pickup.h"
 #include "PussyBase.h"
+#include "Meteor.h"
+
+
 class GameController
 {
 private:
@@ -39,6 +42,9 @@ private:
     bool isblinking;
     Color blink1;
     Color blink2;
+    //hiện wave
+    float waveIntroTimer;
+    int currentWave;
 
 
     void DrawPaused();
@@ -47,6 +53,9 @@ private:
     void DrawGameOver();
     void HandleInput();
     void HandleCountdown();
+    void DrawWaveIntro();
+
+    float waveTransitionTimer = -1.0f;//Nếu khác -1.0f thì ta bắt đầu tăng đếm và sau 2 giây thì chuyển state.
 public:
     GameController();
     ~GameController();
