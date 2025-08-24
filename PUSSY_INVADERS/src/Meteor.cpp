@@ -1,4 +1,4 @@
-﻿#include "Meteor.h"
+#include "Meteor.h"
 #include "raylib.h"
 #include <cmath>
 #include <cstdlib>
@@ -100,12 +100,27 @@ void MeteorManager::UpdateAll(float dt) {
             break;
         case 4:
         default:
-            pos = {
-                (float)GetRandomValue(-50, GetScreenWidth() + 50),
-                (float)GetRandomValue(-50, GetScreenHeight() + 50)
-            };
-            angleRad = GetRandomValue(0, 360) * (PI / 180.0f);
-            vel = { cosf(angleRad) * (speedBase * 2), sinf(angleRad) * (speedBase * 2) };
+            // Spawn từ ngoài rìa (chọn 1 cạnh random)
+            int edge = GetRandomValue(0, 3);
+            switch (edge) {
+            case 0: // top
+                pos = { (float)GetRandomValue(0, GetScreenWidth()), -50 };
+                break;
+            case 1: // bottom
+                pos = { (float)GetRandomValue(0, GetScreenWidth()), (float)GetScreenHeight() + 50 };
+                break;
+            case 2: // left
+                pos = { -50, (float)GetRandomValue(0, GetScreenHeight()) };
+                break;
+            case 3: // right
+                pos = { (float)GetScreenWidth() + 50, (float)GetRandomValue(0, GetScreenHeight()) };
+                break;
+            }
+
+            // Bay vào giữa màn hình
+            Vector2 target = { (float)GetScreenWidth() / 2, (float)GetScreenHeight() / 2 };
+            angleRad = atan2f(target.y - pos.y, target.x - pos.x);
+            vel = { cosf(angleRad) * speedBase, sinf(angleRad) * speedBase };
             break;
         }
 
