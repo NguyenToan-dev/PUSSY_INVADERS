@@ -21,6 +21,8 @@ GameController::GameController()
     bullets.reserve(20);
     bullet_texture = LoadTexture("image/bullet.png");
     Pussy::LoadImage();
+    Pussy2::LoadImage();
+    Pussy3::LoadImage();
     pussies.reserve(18);
     pussy_shit_texture = LoadTexture("image/shit.png");
     thunder_texture = LoadTexture("image/thunder.png"); 
@@ -31,7 +33,7 @@ GameController::GameController()
         for (int i = 0; i < 6; i++) 
         {
             Vector2 pos = { 150.0f + i * 200, 100.0f + row * 100 };
-            pussies.emplace_back(1, pos);
+            pussies.push_back(new Pussy(1, pos)); // Sửa lỗi: Tạo Pussy thay vì PussyBase
         }
     }
 
@@ -52,12 +54,22 @@ GameController::~GameController()
     UnloadTexture(background.GetTexture());
     UnloadMusicStream(music.GetMusic());
     
+    for (auto* pussy : pussies) {
+        delete pussy;}
+    pussies.clear();
+    
+    for (auto* bullet : pussyBullets) {
+        delete bullet;}
+    pussyBullets.clear();
+
     // recently added
     UnloadTexture(bullet_texture);
     UnloadSound(ship_shootsound);
     UnloadSound(pussy_shootsound);
+    
     Pussy::UnloadImage();
-    pussyBullets.clear();
+    Pussy2::UnloadImage();
+    Pussy3::UnloadImage();
     UnloadTexture(thunder_texture);
     UnloadTexture(pussy_shit_texture);
     UnloadSound(thunderSound);
@@ -268,18 +280,54 @@ void GameController::HandleInput()
     }
 }
 
+
+void GameController::HandlePussyWaveProgression()
+{
+    if (pussies.empty())
+    {
+        if (currentPussyStage == 1)
+        {
+            currentPussyStage = 2;
+            for (int row = 0; row < 3; row++)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    Vector2 pos = { 150.0f + i * 200, 100.0f + row * 100 };
+                    pussies.push_back(new Pussy2(1, pos));
+                }
+            }
+        }
+        else if (currentPussyStage == 2)
+        {
+            currentPussyStage = 3;
+            for (int row = 0; row < 3; row++)
+            {
+                for (int i = 0; i < 6; i++)
+                {
+                    Vector2 pos = { 150.0f + i * 200, 100.0f + row * 100 };
+                    pussies.push_back(new Pussy3(1, pos));
+                }
+            }
+        }
+        else if (currentPussyStage == 3)
+        {
+            currentPussyStage = 4;
+        }
+    }
+}
+
 void GameController::HandleObjectDrawing()
 {
     background.DrawRotatingBackground();
-
-    for (auto pussy : pussies)
-        pussy.Draw();
+    
+    for (auto* pussy : pussies)
+        pussy->Draw();
 
     double elapsedTime = GetTime() - timestart;
     Color currentOverlayColor;
     if (elapsedTime >= blinkduration)
         isblinking = false;
-    else
+    else 
     {
         if (isblinking)
             currentOverlayColor = ((int)(elapsedTime * blinkspeed) % 2 == 0) ? blink1 : blink2;
@@ -293,7 +341,7 @@ void GameController::HandleObjectDrawing()
 
     for (int i = 0; i < (int)bullets.size(); i++)
     {
-        if (bullets[i].IsActive() == false)
+        if (bullets[i].active == false)
         {
             bullets.erase(bullets.begin() + i);
             i--;
@@ -303,29 +351,24 @@ void GameController::HandleObjectDrawing()
         bullets[i].Draw();
     }
 
-    for (auto& bullet : bullets)
+    for (auto& bullet : bullets) 
     {
         if (!bullet.IsActive())
             continue;
-        //////////////////////////////////////////////////
-        for (auto& pussy : pussies)
+        for (auto* pussy : pussies)
         {
-            if (CheckCollisionRecs(bullet.getRect(), pussy.getRect()))
+            if (CheckCollisionRecs(bullet.getRect(), pussy->getRect()))
             {
-                bullet.SetActive(false);
-
-                // 1) Tính vị trí spawn NGAY TẠI VỊ TRÍ hiện tại của pussy
-                Rectangle r = pussy.getRect();
-                Vector2 spawnPos = {
-                    r.x + r.width / 2,
-                    r.y + r.height / 2
-                };
-                Pickup::Spawn(spawnPos);
-
-                // 2) Đánh dấu pussy đã chết
-                pussy.position.x = -9999;
-
-                ship.AdjustStatus(SCORE_GAIN_1);
+                bullet.active = false;
+                pussy->health--;
+                if (pussy->health <= 0)
+                {
+                    Rectangle r = pussy->getRect();
+                    Vector2 spawnPos = { r.x + r.width / 2, r.y + r.height / 2 };
+                    Pickup::Spawn(spawnPos);
+                    pussy->position.x = -9999; // Đánh dấu để xóa
+                    ship.AdjustStatus(SCORE_GAIN_1);
+                }
                 break;
             }
         }
@@ -333,58 +376,61 @@ void GameController::HandleObjectDrawing()
 
     for (int i = 0; i < (int)pussies.size(); i++)
     {
-        if (pussies[i].position.x < 0)
+        if (pussies[i]->position.x < 0)
         {
+            delete pussies[i];
             pussies.erase(pussies.begin() + i);
             i--;
         }
     }
 
+    HandlePussyWaveProgression();
+
 Skip_Ship_Bullets:
 
     bool reachEdge = false;
-    for (auto& pussy : pussies)
+    for (auto* pussy : pussies) 
     {
-        pussy.Update(Pussy::pussyDirection);
-        Rectangle r = pussy.getRect();
-        if (r.x < 0 || r.x + r.width > GetScreenWidth())
+        pussy->Update(PussyBase::pussyDirection);
+        Rectangle r = pussy->getRect();
+        if (r.x < 0 || r.x + r.width > GetScreenWidth()) 
             reachEdge = true;
     }
     if (reachEdge)
     {
-        Pussy::pussyDirection = -(Pussy::pussyDirection);
-        for (auto& pussy : pussies)
-            pussy.position.y += 20;
+        PussyBase::pussyDirection = -(PussyBase::pussyDirection);
+        for (auto* pussy : pussies) 
+            pussy->position.y += 20;
     }
 
-    Pussy::pussyShootTimer += GetFrameTime();
-    if (Pussy::pussyShootTimer >= Pussy::pussyShootInterval && !pussies.empty())
+    PussyBase::pussyShootTimer += GetFrameTime();
+    if (PussyBase::pussyShootTimer >= PussyBase::pussyShootInterval && !pussies.empty()) 
     {
-        Pussy::pussyShootTimer = 0.0f;
+        PussyBase::pussyShootTimer = 0.0f;
         int idx = GetRandomValue(0, pussies.size() - 1);
-        Pussy& shooter = pussies[idx];
+        auto* shooter = pussies[idx];
         Vector2 pos = {
-            shooter.getRect().x + shooter.getRect().width / 2,
-            shooter.getRect().y + shooter.getRect().height
+            shooter->getRect().x + shooter->getRect().width / 2,
+            shooter->getRect().y + shooter->getRect().height
         };
 
-        int randType = GetRandomValue(1, 3); // 1/3 chance to shoot thunder bolt
+        int randType = GetRandomValue(1, 3);
         Bullet* newBullet;
         if (randType == 1) {
             newBullet = new ThunderBullet(pos, &thunder_texture);
             PlaySound(thunderSound);
-        }
-        else {
+        } else {
             newBullet = new Bullet(pos, &pussy_shit_texture);
-            newBullet->SetSpeed(-newBullet->GetSpeed());
+            newBullet->speed = -newBullet->speed;
         }
 
         pussyBullets.push_back(newBullet);
         PlaySound(pussy_shootsound);
-    }
+    }   
 
     for (int i = 0; i < (int)pussyBullets.size(); i++) {
-        if (!pussyBullets[i]->IsActive()) {
+        if (!pussyBullets[i]->active) {
+            delete pussyBullets[i];
             pussyBullets.erase(pussyBullets.begin() + i);
             i--;
             continue;
@@ -395,7 +441,7 @@ Skip_Ship_Bullets:
 
     if (!isblinking)
     {
-        int flag = ship.HitBoxChecking(pussyBullets);  // Get hit and run out of lives
+        int flag = ship.HitBoxChecking(pussyBullets);
         if (flag == 2)
         {
             gameState = GAME_GAME_OVER;
@@ -403,7 +449,6 @@ Skip_Ship_Bullets:
         }
         else if (flag == 1)
         {
-            // Make the spaceship blink for 3 seconds
             timestart = GetTime();
             isblinking = true;
             ship.StatusBar();
