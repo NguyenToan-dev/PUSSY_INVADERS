@@ -8,8 +8,8 @@
 
   * Nguyễn Khánh Toàn – MSSV: 24127252
   * Nguyễn Tiến Cường – MSSV: 24127337
-  * Nguyễn Tiến Cường – MSSV: 24127337
-  * Nguyễn Tiến Cường – MSSV: 24127337
+  * Võ Trường Hải     – MSSV: 24127032
+  * Võ Duy Lộc        – MSSV: 24127441
 ---
 
 ## 🔎 Overview
