@@ -37,6 +37,7 @@
 *   **Hệ điều hành:** Được phát triển và kiểm thử trên Windows.
 
 ## 🗂 Cấu trúc dự án (Project root)
+```
 PUSSY_INVADERS/
 │
 ├── font/
@@ -135,7 +136,7 @@ PUSSY_INVADERS/
 │   ├── ThunderBullet.cpp
 │   ├── ThunderBullet.h
 │   └── main.cpp
-
+```
 ## 🚀 Hướng dẫn Chạy Game
 
 ### Cách 1: Chạy trực tiếp (Dành cho người dùng cuối)
