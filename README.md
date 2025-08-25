@@ -22,11 +22,11 @@
 
 *   **Lối chơi classic:** Bắn súng, di chuyển, né đạn và tiêu diệt kẻ thù.
 *   **Hệ thống kẻ địch đa dạng:** 3 loại enemy chính (Pussy, Pussy2, Pussy3) với máu và hành vi khác nhau.
-*   **Hệ thống vũ khí & nâng cấp:** Đạn thường, ThunderBullet (đạn sấm sét) và khả năng nâng cấp level vũ khí.
-*   **Hệ thống vật phẩm (Pickup):** Thu thập Sushi, Battery, Milk và Gift để hồi máu, nâng cấp vũ khí, tăng điểm.
+*   **Hệ thống chiến thuật:** Cơ chế bắn yêu cầu người chơi cân nhắc giữa sát thương liên tục và nguy cơ **quá nhiệt (Overheat)**.
+*   **Hệ thống vật phẩm (Pickup) đa mục tiêu:** Mỗi vật phẩm (Sushi, Battery, Milk, Gift) là một quyết định chiến thuật nho nhỏ, cho phép người chơi lựa chọn hướng nâng cấp tàu của mình, từ tăng điểm số đến củng cố sức mạnh tấn công.
 *   **Cốt truyện sinh động:** Intro và Outro với cốt truyện hài hước, được kể qua các scene với hiệu ứng typing.
 *   **Hiệu ứng hình ảnh phong phú:** Nền xoay, hiệu ứng blink, fade, blur, slow motion, flash đỏ khi game over.
-*   **Hệ thống âm thanh dynamic:** Nhạc nền thay đổi theo trạng thái game (Menu, Playing, Paused, Game Over), hiệu ứng âm thanh cho bắn, nổ, ăn vật phẩm.
+*   **Hệ thống âm thanh dynamic:** Nhạc nền thay đổi theo trạng thái game (Menu, Playing, Paused, Game Over), hiệu ứng âm thanh cho bắn, ăn, rớt vật phẩm.
 *   **Giao diện người dùng (UI) trực quan:** Hiển thị đầy đủ thông số: mạng, điểm, missile, level vũ khí, thanh overheat.
 
 ## 🛠 Công nghệ sử dụng
@@ -166,15 +166,15 @@ PUSSY_INVADERS/
 | Hành động | Điều khiển |
 | :--- | :--- |
 | **Di chuyển tàu** | Di chuyển chuột hoặc sử dụng phím **W/A/S/D** (hoặc **Mũi tên**) |
-| **Bắn đạn** | Nhấn **Space** hoặc **Click chuột trái** |
+| **Bắn đạn** | Nhấn **Space** |
 | **Tạm dừng/Tiếp tục** | Nhấn **P** hoặc **ESC** |
-| **Skip Intro/Outro** | Nhấn **Enter** hoặc **ESC** |
+| **Skip Intro/Outro** | Nhấn **Enter** |
 | **Ăn vật phẩm** | Tự động khi tàu chạm vào vật phẩm |
 
 ## 📖 Báo cáo & Tài liệu
 
 *   **Báo cáo đầy đủ:** Xem file `[group]-[student-ids].pdf` trong thư mục `report/` để biết chi tiết về thiết kế UML, phân tích OOP, Design Patterns, cốt truyện, và đánh giá dự án.
-*   **Mã nguồn:** Được documented trong các file header (`.h`).
+*   **Mã nguồn:** Được documented trong thư mục src.
 
 ## 🔮 Hướng phát triển trong tương lai
 
