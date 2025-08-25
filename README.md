@@ -194,4 +194,4 @@ Dự án này được phân phối theo giấy phép MIT. Xem file `LICENSE` đ
 
 ---
 
-**Chúc bạn chơi game vui vẻ! Meow! 🐱👾**
+![Thanks](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=500&duration=4000&pause=1000&color=45A1FF&center=true&width=600&lines=Ch%C3%BAc%20b%E1%BA%A1n%20ch%C6%A1i%20game%20vui%20v%E1%BA%BB!;Meow!%20%F0%9F%90%B1%F0%9F%91%BF)
