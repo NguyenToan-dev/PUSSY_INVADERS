@@ -1,4 +1,4 @@
-﻿
+
 // Outro.cpp
 
 #include "Outro.h"
@@ -40,8 +40,6 @@ static Sound generateSimpleSound(int sampleRate, int samples)
 Outro::Outro()
 {
     LoadScenes();
-
-    InitAudioDevice();
     if (!IsAudioDeviceReady()) {
         TraceLog(LOG_ERROR, "Audio device failed to initialize (Outro)!");
     }
@@ -91,7 +89,6 @@ Outro::~Outro()
     UnloadSound(typingSound);
     UnloadSound(pilotSound);
     UnloadFont(font);
-    CloseAudioDevice();
 }
 
 void Outro::LoadScenes()
