@@ -31,6 +31,9 @@ public:
     static void DrawAll();
     static bool CheckCollisionWithShip(const Rectangle& shipRect);
     static void CheckCollisionWithBullets(std::vector<Bullet>& bullets);
+
+    static bool IsFinished();
+    static int GetCount();
 };
 
 #endif
