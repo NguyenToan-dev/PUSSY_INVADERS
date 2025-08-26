@@ -129,7 +129,10 @@ Quy trình Phát triển dựa trên AI
 *   **Pickup** giữ **danh sách tĩnh** (lớp tự quản lý vòng đời object của chính nó); GameController chỉ gọi UpdateAll/DrawAll.
 *   **MusicController** được GameController **gọi mỗi frame** để đồng bộ với GameState.
 *   **Background** do GameController cập nhật/wrapper khi resize, countdown, game over (slow-motion).
+
+*   
 ![Ảnh minh họa](Picture1.png)
+
 
 **E. Chu trình 1 frame (luồng xử lý chuẩn)**
 
@@ -397,7 +400,10 @@ private:
 
 **E4) Gợi ý code va chạm (rút gọn, tối ưu xoá O(1))**
 
+
 ![Ảnh minh họa](Picture2.png)
+
+
 
 **Ghi chú**: BAND\_Y chọn ≈ enemyHeight \* 1.5f. Nếu enemy theo hàng, band filter rất hiệu quả.
 
@@ -421,7 +427,11 @@ private:
     *   Dùng **swap-and-pop** khi không cần giữ thứ tự (như ví dụ).
 *   **R5: dynamic\_cast lặp lại**:
     *   Dùng GetType() thay thế để cộng điểm.
+ 
+    *   
 ![Ảnh minh họa](Picture3.png)
+
+
 
 **G. Kiểm thử/đo lường (đề xuất ngắn)**
 
@@ -510,11 +520,16 @@ private:
 *   Vì Pickup đã quản lý **danh sách tĩnh** và **update/draw** riêng (UpdateAll/DrawAll), nên nối 1 dòng này là đủ.
 
 **Tích hợp trong GameController (pseudocode khớp thực tế)**
+
+
 ![Ảnh minh họa](Picture4.png)
+
 
 ![Ảnh minh họa](Picture5.png)
 
+
 ![Ảnh minh họa](Picture6.png)
+
 
 **Thứ tự xử lý trong 1 frame (liên quan đến enemy)**
 
@@ -609,7 +624,9 @@ Với Gift, hệ thống chủ động **tắt cơ chế nảy**: trong trạng 
 
 Ở bước cập nhật mỗi frame, sau khi Pickup::UpdateAll(dt) hoàn tất, phía SpaceShip (hoặc GameController) chạy kiểm tra **AABB** giữa _rect_ của tàu và từng item. Nếu giao nhau, vật phẩm được “ăn”: xóa khỏi danh sách và phát hiệu ứng tương ứng (tăng điểm, hồi máu, nạp pin, kích hoạt slow motion…). Với Gift, quy tắc này vẫn giữ nguyên: nếu người chơi bắt kịp trong khoảng lifeTime sau khi Gift đã chạm đất, hiệu ứng được kích hoạt ngay; nếu không, Gift tự biến mất khi hết giờ.
 
+
 ![Ảnh minh họa](Picture7.png)
+
 
 **7) Vẽ & nhấn mạnh thị giác**
 
@@ -619,7 +636,9 @@ Trong Draw(), thứ tự luôn là **glow trước** rồi tới sprite chính, 
 
 Pickup::pickups là danh sách duy nhất chứa mọi item hiện hữu. UpdateAll(dt) duyệt qua danh sách, gọi item.Update(dt) cho từng phần tử, và loại bỏ những phần tử đã hết hiệu lực (Gift hết lifeTime, hoặc item đã được nhặt). Với Gift, một timer tĩnh giftTimer được tăng dần; khi đạt ngưỡng, SpawnGift() sinh một Gift mới ở toạ độ hợp lý (ví dụ phía trên, rơi thẳng xuống vùng chơi), rồi reset timer. Cơ chế “một điểm phát – rơi thẳng – biến mất khi chạm đáy nếu không nhặt” giữ cho Gift khác biệt rõ rệt với Sushi/Milk/Battery.
 
+
 ![Ảnh minh họa](Picture8.png)
+
 
 **10) Ổn định & thử nghiệm**
 
@@ -634,7 +653,10 @@ AI Output:**
 
 Một thiết kế gọn cho **MeteorManager** là static manager điều khiển trọn vòng đời thiên thạch theo wave. Bên trong giữ std::vector<Meteor> meteors, mảng Texture2D meteorTextures\[4\], chỉ số wavePhase (1..4), các timer waveTimer/spawnTimer, và spawnInterval giảm dần theo phase (kèm waveDurations\[\]). Mỗi Meteor có position/velocity/scale/rotation/rotationSpeed/Texture2D\*/health, trong đó **health tỉ lệ với scale**. UpdateAll(dt) tăng timer, đổi phase khi hết thời lượng, spawn meteor theo **pattern** từng phase (rơi từ trên; lao từ phải; bay từ dưới; bốn cạnh vào tâm), cập nhật vị trí/rotation, và **cull off-screen**. Va chạm dùng **AABB**: CheckCollisionWithShip(Rect) xóa meteor đầu tiên chạm tàu và trả true; CheckCollisionWithBullets(std::vector<Bullet>&) trừ máu theo GetDamage(), deactivate đạn, xóa meteor khi hết máu. DrawAll() chỉ vẽ danh sách hiện hành; IsFinished() trả true khi qua hết phase và meteors rỗng. Tích hợp: GameController gọi StartWaves() khi bắt đầu wave meteor, mỗi khung hình gọi UpdateAll/DrawAll, xử lý kết quả va chạm với tàu/đạn, và chuyển sang OUTRO khi IsFinished() đúng.
 
+
 ![Ảnh minh họa](Picture9.png)
+
+
 **Câu 7**
 
 **Prompt: "Đề xuất state machine cho GameState (COUNTDOWN, PLAYING, PAUSED, GAME\_OVER, WAVE\_INTRO, WIN)."  
@@ -650,6 +672,8 @@ GAME\_OVER chạy chuỗi hiệu ứng nhiều pha (freeze → blur fade → red
 WIN (trong code có thể đặt là OUTRO) phát outro/hiệu ứng thắng, tắt nhạc nền, khóa gameplay; người chơi ESC thoát hoặc trở về menu.
 
 ![Ảnh minh họa](Picture10Picture10.png)
+
+
 **Quy tắc đồng bộ hệ thống (âm nhạc, nền, spawner)**
 
 Âm nhạc: trong COUNTDOWN và PLAYING, gọi music.HandleMusic(state) để fade-in/out theo thời điểm; trong PAUSED lưu pausedVolume, PauseMusicStream() và đặt currentVolume=0; trong GAME\_OVER bỏ qua xử lý nhạc (im lặng); khi WIN, dừng nhạc, không tự loop lại.  
@@ -657,11 +681,17 @@ Nền: ở WAVE\_INTRO/COUNTDOWN tốc độ quay nội suy từ chậm đến b
 Spawner: ngay khi COUNTDOWN→PLAYING, kích hoạt nội dung wave kế tiếp. Ví dụ: wave Meteor gọi MeteorManager::StartWaves(); wave enemy thường mở khóa shooter timer.
 
 **Khung mã gợi ý (rõ ràng, dễ cắm vào dự án)**
+
+
 ![Ảnh minh họa](Picture11.png)
+
 
 ![Ảnh minh họa](Picture12.png)
 
+
+
 ![Ảnh minh họa](Picture13Picture13.png)
+
 
 **Nguyên tắc kiểm thử**
 
@@ -673,7 +703,11 @@ Spawner: ngay khi COUNTDOWN→PLAYING, kích hoạt nội dung wave kế tiếp.
 AI Output:**
 
 Một thiết kế gọn cho **MusicController** là coi nhạc nền như một máy trạng thái nhỏ đồng bộ với GameState. Lớp có musicState ∈ {IDLE, FADING\_IN, PLAYING, FADING\_OUT, PAUSED}, cùng các trường masterVolume (âm lượng mục tiêu), currentVolume (đang phát), fadeDuration, pausedVolume, Music backgroundMusic, bool musicLoaded. Quy tắc đồng bộ: trong WAVE\_INTRO/COUNTDOWN/PLAYING gọi HandleMusic(state) mỗi frame để cập nhật stream và nội suy âm lượng; vào PAUSED thì pausedVolume = currentVolume, PauseMusicStream(), đặt currentVolume=0 và musicState=PAUSED; khi người chơi tiếp tục, chuyển game sang COUNTDOWN ngắn, Play/ResumeMusicStream(), đặt currentVolume=0, musicState=FADING\_IN để lên âm mượt; ở GAME\_OVER/WIN dừng xử lý (im lặng), hoặc StopMusicStream() và musicState=IDLE. Khi phát gần hết bài (thời gian còn lại ≤ fadeDuration), tự chuyển FADING\_OUT, kéo volume về 0 rồi lặp lại bằng cách Stop→Play và trở lại FADING\_IN (loop mượt).
+
+
 ![Ảnh minh họa](Picture14.png)
+
+
 Tóm lại: phát trong COUNTDOWN/PLAYING với **fade-in/out tự động**, **pause mút âm** và **resume qua COUNTDOWN** để người chơi bắt nhịp; **GAME\_OVER/WIN** thì im lặng và không can thiệp volume nữa.
 
 **Giai đoạn 2: Triển khai & Lặp lại**
@@ -690,7 +724,9 @@ Tóm lại: phát trong COUNTDOWN/PLAYING với **fade-in/out tự động**, **
 **Sửa.** Khi phát hiện chạm sàn, nếu bounceCount < 2 và! hasBounced thì tăng bounceCount, đặt hasBounced = true, bật lại vận tốc dọc với cường độ giảm dần (-400 lần 1, -250 lần 2), giảm vận tốc ngang nhẹ (damping). Khi đã **≥ 2 lần**, kẹp position. y = ground, đặt velocity. y = 0 để sang trạng thái Settled. Ngoài sàn, luôn reset hasBounced = false. Đồng thời clamp vị trí về đúng GROUND\_Y để tránh xuyên sàn.  
 **Mẫu cập nhật ngắn.**
 
+
 ![Ảnh minh họa](Picture15Picture15.png)
+
 
 **Kết quả.** Pickup thường nảy đúng hai lần rồi đứng; Gift vẫn rơi thẳng tới đáy (nhánh riêng ở mục 5 trước đó), test ổn trên FPS thấp nhờ clamp.
 
@@ -704,6 +740,8 @@ Tóm lại: phát trong COUNTDOWN/PLAYING với **fade-in/out tự động**, **
 **Cập nhật.** Thunder bay chậm hơn nhưng gây **sát thương vùng** (kiểm một lần với nhiều mục tiêu hoặc nới AABB).
 
 ![Ảnh minh họa](Picture16Picture16.png)
+
+
 **Tích hợp.** Trong chỗ địch bắn, theo stage hoặc xác suất, thay vì new Bullet dùng new ThunderBullet (giữ cùng interface). Collision hiện hữu vẫn dùng AABB, nên không cần đổi pipeline.
 
 **Câu 11**
@@ -721,6 +759,8 @@ Luồng.
     Pseudo.
 
 ![Ảnh minh họa](Picture17Picture17.png)
+
+
 **Âm thanh. Ở GAME\_OVER không cập nhật HandleMusic (im lặng). Khi restart, gọi fade-in lại từ COUNTDOWN.**
 
 **Câu 12**
@@ -741,6 +781,8 @@ Luồng.
 **Công thức.** tilt = clamp(vx \* factor, minAngle, maxAngle). Áp dụng khi vẽ bằng DrawTexturePro (hoặc quay sprite quanh tâm).
 
 ![Ảnh minh họa](Picture18.png)
+
+
 **Câu 14**
 
 **Prompt:** "Cách load/unload textures & sounds an toàn (avoid leaks) trong các class static texture như Pussy::image."  
@@ -815,6 +857,8 @@ Triển khai. allowSkipButton=true; trong input: nếu IsKeyPressed(KEY\_ENTER) 
 **Pseudo.**
 
 ![Ảnh minh họa](Picture19.png)
+
+
 **Câu 24**
 
 **Prompt:** "Khi refactor, làm sao giữ nguyên public API của các class (không phá interface) nhưng cải thiện implementation?"  
