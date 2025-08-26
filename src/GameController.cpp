@@ -337,7 +337,11 @@ void GameController::HandleObjectDrawing()
         goto Skip_Ship_Bullets;
 
     if (IsKeyPressed(KEY_SPACE))
-        ship.Shooting(bullets, &bullet_texture), PlaySound(ship_shootsound);
+    {
+        if(ship.no_shooting == false)
+            ship.Shooting(bullets, &bullet_texture), PlaySound(ship_shootsound);
+    }
+        
 
     for (int i = 0; i < (int)bullets.size(); i++)
     {
@@ -360,14 +364,23 @@ void GameController::HandleObjectDrawing()
             if (CheckCollisionRecs(bullet.getRect(), pussy->getRect()))
             {
                 bullet.active = false;
-                pussy->health--;
+                pussy->health -= (bullet.damage + ship.add_dmg);
                 if (pussy->health <= 0)
                 {
                     Rectangle r = pussy->getRect();
                     Vector2 spawnPos = { r.x + r.width / 2, r.y + r.height / 2 };
                     Pickup::Spawn(spawnPos);
                     pussy->position.x = -9999; // Đánh dấu để xóa
-                    ship.AdjustStatus(SCORE_GAIN_1);
+                    
+                    Pussy *ptr = dynamic_cast<Pussy*>(pussy);
+                    if(ptr)
+                        ship.AdjustStatus(SCORE_GAIN_1);
+                    Pussy2 *ptr1 = dynamic_cast<Pussy2*>(pussy);
+                    if(ptr1)
+                        ship.AdjustStatus(SCORE_GAIN_2);
+                    Pussy3 *ptr2 = dynamic_cast<Pussy3*>(pussy);
+                    if(ptr2)
+                        ship.AdjustStatus(SCORE_GAIN_3);
                 }
                 break;
             }
@@ -480,8 +493,6 @@ Skip_Ship_Bullets:
     {
         waveTransitionTimer = -1.0f; // nếu có pussy thì hủy đếm
     }
-
-
     return;
 }
 

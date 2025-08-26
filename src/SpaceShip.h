@@ -39,6 +39,11 @@ private:
     Vector2 previous_mouse_pos;
     float horizontal_velocity;
     float smooth_velocity;
+    float coolTimer = 0.f;
+
+public:
+    int add_dmg = 0;
+    bool no_shooting = false;
 
 public:
     SpaceShip();

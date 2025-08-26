@@ -25,13 +25,10 @@
     <ClInclude Include="src\Bullet.h" />
     <ClInclude Include="src\GameController.h" />
     <ClInclude Include="src\GameOver.h" />
-<<<<<<< HEAD:PUSSY_INVADERS.vcxproj
-=======
     <ClInclude Include="src\Intro.h" />
     <ClInclude Include="src\IntroTypingAudio.h" />
     <ClInclude Include="src\Menu.h" />
     <ClInclude Include="src\Meteor.h" />
->>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj
     <ClInclude Include="src\MusicController.h" />
     <ClInclude Include="src\Outro.h" />
     <ClInclude Include="src\Pickup.h" />
@@ -49,15 +46,11 @@
     <ClCompile Include="src\Bullet.cpp" />
     <ClCompile Include="src\GameController.cpp" />
     <ClCompile Include="src\GameOver.cpp" />
-<<<<<<< HEAD:PUSSY_INVADERS.vcxproj
-    <ClCompile Include="src\main.cpp" />
-=======
     <ClCompile Include="src\Intro.cpp" />
     <ClCompile Include="src\IntroTypingAudio.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\Menu.cpp" />
     <ClCompile Include="src\Meteor.cpp" />
->>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj
     <ClCompile Include="src\MusicController.cpp" />
     <ClCompile Include="src\Outro.cpp" />
     <ClCompile Include="src\Pickup.cpp" />

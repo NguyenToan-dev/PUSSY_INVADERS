@@ -7,7 +7,7 @@ public:
     int GetType() override;
     static void LoadImage();
     static void UnloadImage();
-    static constexpr int MAX_HEALTH = 1;
+    static constexpr int MAX_HEALTH = 2;
 
 private:
     static Texture2D image;
