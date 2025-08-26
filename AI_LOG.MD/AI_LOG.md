@@ -1,4 +1,4 @@
-**AI Collaboration Log (AI\_LOG.md)**
+**AI COLLABORATION LOG (AI\_LOG.md)**
 
 **Dự án:** PUSSY\_INVADERS
 
@@ -159,29 +159,29 @@ Quy trình Phát triển dựa trên AI
 
 **G. Mẫu header stub (tham khảo rút gọn, bám thiết kế)**
 
+```C++
 // GameController.h (rút gọn)
-
 class GameController {
 
 public:
 
-void Update(); void Draw();
+    void Update(); void Draw();
 
 private:
 
-void HandleInput(); void HandleCountdown();
-
-void DrawWaveIntro(); void DrawPaused(); void DrawGameOver();
-
-void HandlePussyWaveProgression(); void HandleObjectDrawing();
-
-SpaceShip ship; Background background; MusicController music;
-
-std::vector<Bullet> bullets; std::vector<Bullet\*> pussyBullets;
-
-std::vector<PussyBase\*> pussies;
-
-Texture2D bullet\_texture, thunder\_texture, pussy\_shit\_texture;
+    void HandleInput(); void HandleCountdown();
+    
+    void DrawWaveIntro(); void DrawPaused(); void DrawGameOver();
+    
+    void HandlePussyWaveProgression(); void HandleObjectDrawing();
+    
+    SpaceShip ship; Background background; MusicController music;
+    
+    std::vector<Bullet> bullets; std::vector<Bullet\*> pussyBullets;
+    
+    std::vector<PussyBase\*> pussies;
+    
+    Texture2D bullet\_texture, thunder\_texture, pussy\_shit\_texture;
 
 // state & timers...
 
@@ -193,21 +193,21 @@ class SpaceShip {
 
 public:
 
-void Moving(); void MovingWhileBlinking(Color tint);
-
-void Shooting(std::vector<Bullet>& bullets, Texture2D\* bulletTex);
-
-Rectangle getRect() const;
-
-int HitBoxChecking(std::vector<Bullet\*>& enemyBullets);
-
-void EatPickup(); void StatusBar(); void AdjustStatus(Effect e); void SetAttribute();
+    void Moving(); void MovingWhileBlinking(Color tint);
+    
+    void Shooting(std::vector<Bullet>& bullets, Texture2D\* bulletTex);
+    
+    Rectangle getRect() const;
+    
+    int HitBoxChecking(std::vector<Bullet\*>& enemyBullets);
+    
+    void EatPickup(); void StatusBar(); void AdjustStatus(Effect e); void SetAttribute();
 
 private:
 
-Vector2 position; float ship\_scale; Vector2 recoil\_offset; float recoil\_timer, recoil\_duration, recoil\_strength;
-
-bool no\_shooting; int lives; int score;
+    Vector2 position; float ship\_scale; Vector2 recoil\_offset; float recoil\_timer, recoil\_duration, recoil\_strength;
+    
+    bool no\_shooting; int lives; int score;
 
 };
 
@@ -217,13 +217,13 @@ class Bullet {
 
 public:
 
-void Update(); void Draw();
-
-Rectangle getRect() const; bool IsActive() const; void SetActive(bool);
-
-int GetDamage() const;
-
-Vector2 position; float speed; int damage; bool active; Texture2D\* texture;
+    void Update(); void Draw();
+    
+    Rectangle getRect() const; bool IsActive() const; void SetActive(bool);
+    
+    int GetDamage() const;
+    
+    Vector2 position; float speed; int damage; bool active; Texture2D\* texture;
 
 };
 
@@ -233,17 +233,17 @@ class PussyBase {
 
 public:
 
-virtual ~PussyBase() {}
-
-virtual void Draw() = 0; virtual void Update(float direction);
-
-virtual int GetType() const = 0; virtual Texture2D& getTexture() = 0;
-
-Rectangle getRect() const;
-
-Vector2 position; int health;
-
-static float pussyDirection, pussyShootTimer, pussyShootInterval;
+    virtual ~PussyBase() {}
+    
+    virtual void Draw() = 0; virtual void Update(float direction);
+    
+    virtual int GetType() const = 0; virtual Texture2D& getTexture() = 0;
+    
+    Rectangle getRect() const;
+    
+    Vector2 position; int health;
+    
+    static float pussyDirection, pussyShootTimer, pussyShootInterval;
 
 };
 
@@ -253,17 +253,17 @@ class Pickup {
 
 public:
 
-static void LoadTextures(); static void UpdateAll(float dt); static void DrawAll();
-
-static void Spawn(Vector2 pos); static void SpawnGift();
-
-void Update(float dt); void Draw() const; Rectangle GetRect() const;
+    static void LoadTextures(); static void UpdateAll(float dt); static void DrawAll();
+    
+    static void Spawn(Vector2 pos); static void SpawnGift();
+    
+    void Update(float dt); void Draw() const; Rectangle GetRect() const;
 
 private:
 
-static std::vector<Pickup> pickups; static bool isLoaded; static float giftTimer;
-
-Vector2 position, velocity; int bounceCount; bool hasBounced, isGift; float rotationAngle, lifeTime;
+    static std::vector<Pickup> pickups; static bool isLoaded; static float giftTimer;
+    
+    Vector2 position, velocity; int bounceCount; bool hasBounced, isGift; float rotationAngle, lifeTime;
 
 };
 
@@ -275,33 +275,34 @@ class MusicController {
 
 public:
 
-MusicController(); ~MusicController();
-
-void LoadBackgroundMusic(); void HandleMusic(GameState gs);
-
-void SetState(MusicState); MusicState GetState() const;
-
-void SetMVolume(float); float GetMVolume() const;
-
-void SetCVolume(float); float GetCVolume() const;
-
-void SetDuration(float); float GetDuration() const;
-
-void SetPVolume(float); float GetPVolume() const;
-
-void SetVolumeNow(float volume);
-
-bool IsMusicLoaded() const; Music GetMusic() const;
+    MusicController(); ~MusicController();
+    
+    void LoadBackgroundMusic(); void HandleMusic(GameState gs);
+    
+    void SetState(MusicState); MusicState GetState() const;
+    
+    void SetMVolume(float); float GetMVolume() const;
+    
+    void SetCVolume(float); float GetCVolume() const;
+    
+    void SetDuration(float); float GetDuration() const;
+    
+    void SetPVolume(float); float GetPVolume() const;
+    
+    void SetVolumeNow(float volume);
+    
+    bool IsMusicLoaded() const; Music GetMusic() const;
 
 private:
 
-Music backgroundMusic; bool musicLoaded;
-
-float masterVolume, currentVolume, fadeDuration, pausedVolume;
-
-MusicState musicState;
+    Music backgroundMusic; bool musicLoaded;
+    
+    float masterVolume, currentVolume, fadeDuration, pausedVolume;
+    
+    MusicState musicState;
 
 };
+```
 
 **H. Checklist triển khai & test nhanh**
 
