@@ -58,6 +58,8 @@ private:
     float waveTransitionTimer = -1.0f;
     Outro outro;
     bool gameWin = false;
+    float outroTimer = 0.0f;
+    bool outroPending = false;
 public:
     GameController();
     ~GameController();
