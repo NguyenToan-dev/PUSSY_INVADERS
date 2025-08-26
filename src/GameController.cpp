@@ -152,9 +152,10 @@ void GameController::Update()
         }
 
         // --- KẾT THÚC METEOR WAVE → OUTRO ---
-        if (MeteorManager::IsFinished()) {
+        if (MeteorManager::IsFinished() && !outroPending) {
             gameWin = true;
-            gameState = GAME_OUTRO;
+            outroPending = true;
+            outroTimer = 0.0f;   // reset timer
             bullets.clear();
             for (auto* b : pussyBullets) delete b;
             pussyBullets.clear();
@@ -164,7 +165,16 @@ void GameController::Update()
                 music.SetCVolume(0.0f);
                 SetMusicVolume(music.GetMusic(), music.GetCVolume());
             }
-            return; // sang OUTRO
+            return;
+        }
+
+        if (outroPending) {
+            outroTimer += GetFrameTime();
+            if (outroTimer >= 5.0f) {
+                gameState = GAME_OUTRO;   // chuyển sau 5 giây
+                outroPending = false;
+            }
+            return; // block update game trong lúc chờ
         }
     }
 }
