@@ -527,7 +527,7 @@ void GameController::Draw()
     if (gameState == GAME_OUTRO) {
     outro.Draw();
     if (outro.IsFinished()) {
-        const char* exitText = "Press ESC to Exit";
+        const char* exitText = "Press Backspace to Exit";
         int fs = 28, tw = MeasureText(exitText, fs);
         DrawText(exitText,
                  (GetScreenWidth()-tw)/2,
