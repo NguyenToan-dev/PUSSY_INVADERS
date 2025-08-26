@@ -671,7 +671,7 @@ PAUSED đóng băng gameplay, dừng xoay nền hoặc giảm về 0, **pause** 
 GAME\_OVER chạy chuỗi hiệu ứng nhiều pha (freeze → blur fade → red flash → text), nhạc tắt, nền slow-motion. Khi tới màn “Press R to Restart”, người chơi bấm R để quay COUNTDOWN, reset thông số cần thiết, rồi trở lại PLAYING.  
 WIN (trong code có thể đặt là OUTRO) phát outro/hiệu ứng thắng, tắt nhạc nền, khóa gameplay; người chơi ESC thoát hoặc trở về menu.
 
-![Ảnh minh họa](Picture10Picture10.png)
+![Ảnh minh họa](Picture10.png)
 
 
 **Quy tắc đồng bộ hệ thống (âm nhạc, nền, spawner)**
@@ -690,7 +690,7 @@ Spawner: ngay khi COUNTDOWN→PLAYING, kích hoạt nội dung wave kế tiếp.
 
 
 
-![Ảnh minh họa](Picture13Picture13.png)
+![Ảnh minh họa](Picture13.png)
 
 
 **Nguyên tắc kiểm thử**
@@ -725,7 +725,7 @@ Tóm lại: phát trong COUNTDOWN/PLAYING với **fade-in/out tự động**, **
 **Mẫu cập nhật ngắn.**
 
 
-![Ảnh minh họa](Picture15Picture15.png)
+![Ảnh minh họa](Picture15.png)
 
 
 **Kết quả.** Pickup thường nảy đúng hai lần rồi đứng; Gift vẫn rơi thẳng tới đáy (nhánh riêng ở mục 5 trước đó), test ổn trên FPS thấp nhờ clamp.
@@ -739,7 +739,7 @@ Tóm lại: phát trong COUNTDOWN/PLAYING với **fade-in/out tự động**, **
 **Thiết kế.** ThunderBullet : public Bullet giữ nguyên trường nhẹ (pos/speed/damage/active/texture\*) nhưng override **Update/Draw/getRect**. getRect() trả về hitbox **rộng hơn** để mô phỏng aoe tia sét; có thể thêm radius hoặc **scale riêng**. Có lifetime để tự hủy.  
 **Cập nhật.** Thunder bay chậm hơn nhưng gây **sát thương vùng** (kiểm một lần với nhiều mục tiêu hoặc nới AABB).
 
-![Ảnh minh họa](Picture16Picture16.png)
+![Ảnh minh họa](Picture16.png)
 
 
 **Tích hợp.** Trong chỗ địch bắn, theo stage hoặc xác suất, thay vì new Bullet dùng new ThunderBullet (giữ cùng interface). Collision hiện hữu vẫn dùng AABB, nên không cần đổi pipeline.
@@ -758,7 +758,7 @@ Luồng.
 *   TEXT\_DISPLAY: hiện “GAME OVER – Press R”.  
     Pseudo.
 
-![Ảnh minh họa](Picture17Picture17.png)
+![Ảnh minh họa](Picture17.png)
 
 
 **Âm thanh. Ở GAME\_OVER không cập nhật HandleMusic (im lặng). Khi restart, gọi fade-in lại từ COUNTDOWN.**
