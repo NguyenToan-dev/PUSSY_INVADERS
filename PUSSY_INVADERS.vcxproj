@@ -22,7 +22,7 @@
     <ClInclude Include="src\Addition.h" />
     <ClInclude Include="src\Background.h" />
     <ClInclude Include="src\Brightness.h" />
-    <ClInclude Include="src\bullet.h" />
+    <ClInclude Include="src\Bullet.h" />
     <ClInclude Include="src\GameController.h" />
     <ClInclude Include="src\GameOver.h" />
 <<<<<<< HEAD:PUSSY_INVADERS.vcxproj
@@ -33,8 +33,12 @@
     <ClInclude Include="src\Meteor.h" />
 >>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj
     <ClInclude Include="src\MusicController.h" />
+    <ClInclude Include="src\Outro.h" />
     <ClInclude Include="src\Pickup.h" />
-    <ClInclude Include="src\pussy.h" />
+    <ClInclude Include="src\Pussy.h" />
+    <ClInclude Include="src\Pussy2.h" />
+    <ClInclude Include="src\Pussy3.h" />
+    <ClInclude Include="src\PussyBase.h" />
     <ClInclude Include="src\SpaceShip.h" />
     <ClInclude Include="src\SpaceShipTexture.h" />
     <ClInclude Include="src\ThunderBullet.h" />
@@ -42,7 +46,7 @@
   <ItemGroup>
     <ClCompile Include="src\Background.cpp" />
     <ClCompile Include="src\Brightness.cpp" />
-    <ClCompile Include="src\bullet.cpp" />
+    <ClCompile Include="src\Bullet.cpp" />
     <ClCompile Include="src\GameController.cpp" />
     <ClCompile Include="src\GameOver.cpp" />
 <<<<<<< HEAD:PUSSY_INVADERS.vcxproj
@@ -55,8 +59,12 @@
     <ClCompile Include="src\Meteor.cpp" />
 >>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj
     <ClCompile Include="src\MusicController.cpp" />
+    <ClCompile Include="src\Outro.cpp" />
     <ClCompile Include="src\Pickup.cpp" />
-    <ClCompile Include="src\pussy.cpp" />
+    <ClCompile Include="src\Pussy.cpp" />
+    <ClCompile Include="src\Pussy2.cpp" />
+    <ClCompile Include="src\Pussy3.cpp" />
+    <ClCompile Include="src\PussyBase.cpp" />
     <ClCompile Include="src\SpaceShip.cpp" />
     <ClCompile Include="src\SpaceShipTexture.cpp" />
     <ClCompile Include="src\ThunderBullet.cpp" />

@@ -24,7 +24,7 @@
     <ClInclude Include="src\Brightness.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\bullet.h">
+    <ClInclude Include="src\Bullet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\GameController.h">
@@ -33,10 +33,34 @@
     <ClInclude Include="src\GameOver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\Intro.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\IntroTypingAudio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Menu.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Meteor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="src\MusicController.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\pussy.h">
+    <ClInclude Include="src\Pickup.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pussy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pussy2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Pussy3.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\PussyBase.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\SpaceShip.h">
@@ -48,6 +72,7 @@
     <ClInclude Include="src\ThunderBullet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+<<<<<<< HEAD:PUSSY_INVADERS.vcxproj.filters
     <ClInclude Include="src\Pickup.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -60,6 +85,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\IntroTypingAudio.h">
+=======
+    <ClInclude Include="src\Outro.h">
+>>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj.filters
       <Filter>Header Files</Filter>
     </ClInclude>
 <<<<<<< HEAD:PUSSY_INVADERS.vcxproj.filters
@@ -77,7 +105,7 @@
     <ClCompile Include="src\Brightness.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\bullet.cpp">
+    <ClCompile Include="src\Bullet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\GameController.cpp">
@@ -86,13 +114,37 @@
     <ClCompile Include="src\GameOver.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\Intro.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\IntroTypingAudio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Menu.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Meteor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\MusicController.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\pussy.cpp">
+    <ClCompile Include="src\Pickup.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pussy.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pussy2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\Pussy3.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\PussyBase.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\SpaceShip.cpp">
@@ -104,6 +156,7 @@
     <ClCompile Include="src\ThunderBullet.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD:PUSSY_INVADERS.vcxproj.filters
     <ClCompile Include="src\Pickup.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -117,6 +170,9 @@
     </ClCompile>
 <<<<<<< HEAD:PUSSY_INVADERS.vcxproj.filters
     <ClCompile Include="src\IntroTypingAudio.cpp">
+=======
+    <ClCompile Include="src\Outro.cpp">
+>>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj.filters
       <Filter>Source Files</Filter>
     </ClCompile>
 >>>>>>> Toan:PUSSY_INVADERS/PUSSY_INVADERS.vcxproj.filters
