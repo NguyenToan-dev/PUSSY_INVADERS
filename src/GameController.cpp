@@ -76,12 +76,10 @@ GameController::~GameController()
 
     MeteorManager::Unload();
 }
-
 void GameController::Update() 
 {
-    //------------hiện wave--------------
     if (gameState == GAME_WAVE_INTRO) {
-        float frameTime = std::min(GetFrameTime(), 0.1f); // Clamp to 0.1s max
+        float frameTime = std::min(GetFrameTime(), 0.1f); 
         waveIntroTimer += frameTime;
         background.SetRotation(0.5f);
         if (waveIntroTimer >= 2.0f) {
@@ -90,49 +88,33 @@ void GameController::Update()
         }
         return;
     }
-    //------------------------------------
+
     if (gameState == GAME_PLAYING_STATE) 
     {
         background.SetRotation(background.GetRotation() + background.GetSpeed() * GetFrameTime());
         music.HandleMusic(gameState);
         HandleInput();
-        if (currentWave == 2)
-        {
-            MeteorManager::UpdateAll(GetFrameTime());
-            Rectangle shipRect = ship.getRect();
-            // chỉ check nếu chưa đang nhấp nháy
-            if (!isblinking && MeteorManager::CheckCollisionWithShip(shipRect))
-            {
-                // Trúng meteor → trừ 1 mạng
-                ship.AdjustStatus(LIVE_DECREASE);
-
-                // Bắt đầu nhấp nháy (giống trúng đạn)
-                timestart = GetTime();
-                isblinking = true;
-                ship.StatusBar();    // cập nhật thanh ngay lập tức
-
-                // Nếu hết mạng thì Game Over
-                if (ship.GetLives() == 0)
-                    gameState = GAME_GAME_OVER;
-            }
-        }
-
     }
     else if (gameState == GAME_GAME_OVER) 
     {
         if (gameover.GetPhase() == FREEZE || gameover.GetPhase() == FADE_BLUR) 
-            background.SetRotation(background.GetRotation() + background.GetSpeed() * 
-                GetFrameTime() * SLOW_MOTION_FACTOR);
+            background.SetRotation(background.GetRotation() + background.GetSpeed() * GetFrameTime() * SLOW_MOTION_FACTOR);
+
         gameover.HandleGameOver(blurOpacity);
+
         if (gameover.GetPhase() == TEXT_DISPLAY && IsKeyPressed(KEY_R)) 
             HandleInput();
     }
+    else if (gameState == GAME_OUTRO) 
+    {
+        outro.Update();
+        return;
+    }
     else if (gameState == GAME_COUNTDOWN) 
     {
-        float speedFactor = SLOW_MOTION_FACTOR + 
-            (1.0f - SLOW_MOTION_FACTOR) * (countdownTimer / COUNTDOWN_DURATION);
+        float speedFactor = SLOW_MOTION_FACTOR + (1.0f - SLOW_MOTION_FACTOR) * (countdownTimer / COUNTDOWN_DURATION);
         background.SetRotation(background.GetRotation() + background.GetSpeed() * GetFrameTime() * speedFactor);
-        HandleCountdown();
+        HandleCountdown();           
         music.HandleMusic(gameState);
     }
     else if (gameState == GAME_PAUSED) 
@@ -141,23 +123,51 @@ void GameController::Update()
             UpdateMusicStream(music.GetMusic());
         HandleInput();
     }
+
     if (IsWindowResized()) 
     {
         background.SetCenter((float)GetScreenWidth() / 2.0f, (float)GetScreenHeight() / 2.0f);
         background.CalculateBackgroundScale();
     }
     
-    Pickup::UpdateAll(GetFrameTime());//->Cập nhật tất cả pickups mỗi frame
+    Pickup::UpdateAll(GetFrameTime());
 
-    // Chỉ update meteor khi đã ở wave 2 trở lên và đang chơi
     if (currentWave == 2 && gameState == GAME_PLAYING_STATE) {
-        MeteorManager::UpdateAll(GetFrameTime());
+        float dt = GetFrameTime();
+        MeteorManager::UpdateAll(dt);
         MeteorManager::CheckCollisionWithBullets(bullets); 
-        Rectangle shipRect = ship.getRect();
+
+        if (!isblinking) {
+            Rectangle shipRect = ship.getRect();
+            if (MeteorManager::CheckCollisionWithShip(shipRect)) {
+                ship.AdjustStatus(LIVE_DECREASE);
+                timestart = GetTime();
+                isblinking = true;
+                ship.StatusBar();   
+                if (ship.GetLives() == 0) {
+                    gameState = GAME_GAME_OVER;
+                    return;
+                }
+            }
+        }
+
+        // --- KẾT THÚC METEOR WAVE → OUTRO ---
+        if (MeteorManager::IsFinished()) {
+            gameWin = true;
+            gameState = GAME_OUTRO;
+            bullets.clear();
+            for (auto* b : pussyBullets) delete b;
+            pussyBullets.clear();
+            if (music.IsMusicLoaded()) {
+                StopMusicStream(music.GetMusic());
+                music.SetState(MUSIC_IDLE);
+                music.SetCVolume(0.0f);
+                SetMusicVolume(music.GetMusic(), music.GetCVolume());
+            }
+            return; // sang OUTRO
+        }
     }
-
 }
-
 void GameController::HandleCountdown() 
 {
     countdownTimer += GetFrameTime();
@@ -168,6 +178,9 @@ void GameController::HandleCountdown()
         gameover.SetTime(.0f);
         blurOpacity = 0.0f;
         std::cout << "Game resumed\n";
+        if (currentWave == 2) {
+            MeteorManager::StartWaves();
+        }
     }
 }
 
@@ -278,9 +291,18 @@ void GameController::HandleInput()
             std::cout << "Countdown started\n";
         }
     }
+    else if (gameState == GAME_OUTRO)
+    {
+        if (outro.IsFinished())
+        {
+            if (IsKeyPressed(KEY_ESCAPE))
+            {
+                CloseWindow();   
+                return;
+            }
+        }
+    }
 }
-
-
 void GameController::HandlePussyWaveProgression()
 {
     if (pussies.empty())
@@ -502,7 +524,18 @@ void GameController::Draw()
         DrawWaveIntro();
         return;    // dừng luôn, không vẽ gì khác
     }
-
+    if (gameState == GAME_OUTRO) {
+    outro.Draw();
+    if (outro.IsFinished()) {
+        const char* exitText = "Press ESC to Exit";
+        int fs = 28, tw = MeasureText(exitText, fs);
+        DrawText(exitText,
+                 (GetScreenWidth()-tw)/2,
+                 GetScreenHeight()-fs-40,
+                 fs, WHITE);
+    }
+    return;
+}
     HandleObjectDrawing();
     if (gameState == GAME_GAME_OVER)
         DrawGameOver();    
@@ -513,13 +546,15 @@ void GameController::Draw()
     }
     else if (gameState == GAME_PAUSED)
         DrawPaused();   
+    
     //else DrawUI();
-
+    
     Pickup::DrawAll();//recently added
     // Chỉ vẽ meteor khi đã vào wave 2+
     if (currentWave > 1) {
         MeteorManager::DrawAll();
     }
+    
 }
 
 void GameController::DrawWaveIntro()
