@@ -164,7 +164,7 @@ PUSSY_INVADERS/
 | :--- | :--- |
 | **Di chuyển tàu** | Di chuyển chuột |
 | **Bắn đạn** | Nhấn **Space** |
-| **Tạm dừng/Tắt game** | Nhấn **P** hoặc **ESC** |
+| **Tạm dừng/Tắt game** | Nhấn **P** hoặc **Backspace** |
 | **Skip Intro/Outro** | Nhấn **Enter** |
 | **Ăn vật phẩm** | Tự động khi tàu chạm vào vật phẩm |
 | **Chế độ Fullscreen** | Nhấn **F** |
