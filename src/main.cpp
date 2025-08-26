@@ -1,4 +1,4 @@
-﻿#include <raylib.h>
+#include <raylib.h>
 #include "Menu.h"           // Add this - your new menu system
 #include "GameController.h"
 #include "Intro.h"
@@ -8,6 +8,7 @@ int main()
     const int width = 1920;
     const int height = 1080;
     InitWindow(width, height, "PUSSY INVADERs");
+    SetExitKey(KEY_NULL);   // Disable default ESC = quit
     SetTargetFPS(144);
     InitAudioDevice();
 
@@ -19,6 +20,13 @@ int main()
         ClearBackground(BLACK);
         menu.Draw();
         EndDrawing();
+
+        // Bấm BACKSPACE để thoát ngay
+        if (IsKeyPressed(KEY_BACKSPACE)) {
+            CloseAudioDevice();
+            CloseWindow();
+            return 0;
+        }
     }
 
     // Exit if window was closed during menu
@@ -40,6 +48,13 @@ int main()
         ClearBackground(BLACK);
         intro.Draw();
         EndDrawing();
+
+        // BACKSPACE để thoát
+        if (IsKeyPressed(KEY_BACKSPACE)) {
+            CloseAudioDevice();
+            CloseWindow();
+            return 0;
+        }
     }
 
     // ===== After Intro, run GAME =====
@@ -50,6 +65,11 @@ int main()
         controller.Update();
         controller.Draw();
         EndDrawing();
+
+        // BACKSPACE để thoát
+        if (IsKeyPressed(KEY_BACKSPACE)) {
+            break; // thoát game loop
+        }
     }
 
     CloseAudioDevice();
