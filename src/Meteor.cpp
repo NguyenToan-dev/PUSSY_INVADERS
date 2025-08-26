@@ -196,3 +196,12 @@ void MeteorManager::CheckCollisionWithBullets(std::vector<Bullet>& bullets) {
         }
     }
 }
+
+int MeteorManager::GetCount() {
+    return (int)meteors.size();
+}
+
+bool MeteorManager::IsFinished() {
+    // Kết thúc khi đã vượt qua wavePhase 4 và không còn meteor nào
+    return (wavePhase > 4) && meteors.empty();
+}
