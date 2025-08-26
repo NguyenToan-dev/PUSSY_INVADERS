@@ -147,7 +147,7 @@ PUSSY_INVADERS/
 ### Cách 2: Biên dịch từ mã nguồn (Dành cho nhà phát triển)
 
 1.  **Cài đặt môi trường:**
-    *   Cài đặt một IDE hỗ trợ C++ (khuyến nghị **Visual Studio 2022**).
+    *   Cài đặt một IDE hỗ trợ C++ (khuyến nghị **Visual Studio/Visual Studio Code 2022**).
     *   Thiết lập thư viện Raylib theo hướng dẫn chi tiết tại video: [👉 How to setup Raylib with C++ in Visual Studio 2022 Community (YouTube)](https://www.youtube.com/watch?v=PaAcVk5jUd8)
 (Video này hướng dẫn từng bước rõ ràng, ngắn gọn và dễ hiểu, nên bạn chỉ cần làm theo để hoàn tất cài đặt Raylib.)
 
