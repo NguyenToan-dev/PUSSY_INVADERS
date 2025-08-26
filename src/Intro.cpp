@@ -1,4 +1,4 @@
-﻿#include "Intro.h"
+#include "Intro.h"
 #include "IntroTypingAudio.h"
 
 Intro::Intro()
