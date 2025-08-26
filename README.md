@@ -148,11 +148,8 @@ PUSSY_INVADERS/
 
 1.  **Cài đặt môi trường:**
     *   Cài đặt một IDE hỗ trợ C++ (khuyến nghị **Visual Studio 2022**).
-    *   Cài đặt thư viện **Raylib**. Có thể sử dụng `vcpkg`:
-        ```bash
-        vcpkg install raylib:x64-windows
-        ```
-    *   Hoặc tải về từ trang chủ và thiết lập thủ công: [https://www.raylib.com/](https://www.raylib.com/)
+    *   Thiết lập thư viện Raylib theo hướng dẫn chi tiết tại video: [👉 How to setup Raylib with C++ in Visual Studio 2022 Community (YouTube)](https://www.youtube.com/watch?v=PaAcVk5jUd8)
+(Video này hướng dẫn từng bước rõ ràng, ngắn gọn và dễ hiểu, nên bạn chỉ cần làm theo để hoàn tất cài đặt Raylib.)
 
 2.  **Biên dịch project:**
     *   Mở project trong IDE của bạn.
@@ -165,11 +162,12 @@ PUSSY_INVADERS/
 
 | Hành động | Điều khiển |
 | :--- | :--- |
-| **Di chuyển tàu** | Di chuyển chuột hoặc sử dụng phím **W/A/S/D** (hoặc **Mũi tên**) |
+| **Di chuyển tàu** | Di chuyển chuột |
 | **Bắn đạn** | Nhấn **Space** |
-| **Tạm dừng/Tiếp tục** | Nhấn **P** hoặc **ESC** |
+| **Tạm dừng/Tắt game** | Nhấn **P** hoặc **ESC** |
 | **Skip Intro/Outro** | Nhấn **Enter** |
 | **Ăn vật phẩm** | Tự động khi tàu chạm vào vật phẩm |
+| **Chế độ Fullscreen** | Nhấn **F** |
 
 ## 📖 Báo cáo & Tài liệu
 
